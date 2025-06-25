@@ -263,13 +263,6 @@ def product():
 @app.route('/getproduct', methods=['GET'])
 def getproduct():
      
-    data = ({'product':
-        'product_name'
-        'product_price'
-        'product_uses'
-        'product_images'
-     
-})
     data = request.get_json()
     product_name = data.get('product_name')
     product_price = data.get('product_price')
