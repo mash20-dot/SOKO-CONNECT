@@ -152,6 +152,7 @@ def business_user():
      
 
 
+     
     #saves products/items into the database
     new_business = Business(business_name=business_name, business_email=business_email, phone=phone,)
     db.session.add(new_business)
@@ -173,6 +174,7 @@ def getbusiness():
      business_name = data.get('business_name')
      business_email = data.get('business_email')
      phone = data.get('phone')
+     password = data.get('password')
 
 
      Missing_fields = []
@@ -182,6 +184,8 @@ def getbusiness():
             Missing_fields.append('business_email')
      if not phone:
             Missing_fields.append('phone')
+     if not password:
+            Missing_fields.append('password')
 
 
      if Missing_fields:
@@ -223,7 +227,7 @@ def product():
         product_name = data.get('product_name')
         product_price = data.get('product_price')
         product_uses = data.get('product_uses')
-        product_images = data.get('product_images')
+
 
         Missing_fields= []
 
@@ -233,8 +237,7 @@ def product():
             Missing_fields.append('product_price')
         if not product_uses:
             Missing_fields.append('product_uses')
-        if not product_images:
-            Missing_fields.append('product_images')
+    
             
 
         if Missing_fields:
@@ -242,7 +245,7 @@ def product():
 
         
        #saves products/items into the database
-        new_product = products(product_name=product_name, product_price=product_price, product_uses=product_uses, product_images=product_images)
+        new_product = products(product_name=product_name, product_price=product_price, product_uses=product_uses)
         db.session.add(new_product)
         db.session.commit()
 
@@ -263,11 +266,10 @@ def product():
 @app.route('/getproduct', methods=['GET'])
 def getproduct():
      
-    data = request.get_json()
-    product_name = data.get('product_name')
-    product_price = data.get('product_price')
-    product_uses = data.get('product_uses')
-    product_images = data.get('product_images')
+    data = request.args
+    product_name = request.args.get('product_name')
+    product_price = request.args.get('product_price')
+    product_uses = request.args.get('product_uses')
 
     
     
@@ -279,22 +281,167 @@ def getproduct():
             Missing_fields.append('product_price')
     if not product_uses:
             Missing_fields.append('product_uses')
-    if not product_images:
-            Missing_fields.append('product_images')
 
 
 
     if Missing_fields:
         return jsonify({"Error": f"missing_fields: {Missing_fields}"}), 400
 
-        
-   
+    #not working yet have to fix it    
+    #if product in products:
+         #return jsonify({'message': 'product already uploaded'})
+    product = products.query.filter_by(product_name=product_name).first()
 
     if product:
-         return jsonify({'message': 'items retrieved successfully'}), 201
+         return jsonify({'message': 'items retrieved successfully',
+                         'product_name':product_name,
+                         'product_price':product_price,
+                         'product_uses':product_uses
+                         
+    }), 200
     if not product:
          return jsonify({'message': 'could not retrieve item'}), 400
+    
+    
+    
 
+
+
+#A form a buyer will fill whiles contacting or buying a product, this will go into the business owner histoy
+
+app.config['SQLALCHEMY_DATABASE_URL'] = 'sqlite:///contact.db'                                           
+class History(db.Model):
+        id = db.Column(db.Integer, primary_key=True)    
+        buyer_name = db.Column(db.String(50))
+        buyer_product = db.Column(db.String(50))
+        date = db.Column(db.String(30))
+
+
+@app.route('/history', methods=['POST'])
+def history():
+        data = request.get_json()
+        buyer_name = data.get('buyer_name')
+        buyer_product = data.get('buyer_product')
+        date = data.get('date')
+
+        #stores a blank field and if not field throws an error
+        Missing_fields = []
+        if not buyer_name:
+             Missing_fields('buyer_name')
+        if not buyer_product:
+             Missing_fields('buyer_product')
+        if not date:
+             Missing_fields('data')
+
+        if Missing_fields:
+            return jsonify({"Error": f"missing_fields: {Missing_fields}"}), 400
+        
+        if History:
+             return jsonify({'message': 'history stored successfuly'}), 201
+        else:
+             return jsonify({'message': 'Error, could not update history'}), 400
+
+
+
+@app.route('/gethistory', methods=['GET'])
+def gethistory():
+     
+     data = request.args
+     buyer_name = request.args.get('buyer_name')
+     buyer_product = request.args.get('buyer_product')
+     date = request.args.get('date')
+     
+
+     #stores a blank field and if not field throws an error
+     Missing_fields = []
+     if not buyer_name:
+          Missing_fields('buyer_name')
+     if not buyer_product:
+          Missing_fields('buyer_product')
+     if not date:
+          Missing_fields('date')
+
+     if Missing_fields:
+          return jsonify({"Error": f"missing_fields: {Missing_fields}"}), 400
+     
+    
+    
+     #Filters the history with buyer_name
+     history = History.query.filter_by(buyer_name=buyer_name).first()
+     if History:
+          return jsonify({  'message': 'Data retrieved',
+                            'buyer_name': buyer_name,
+                            'buyer_product': buyer_product,
+                            'date': data
+                                 
+     }), 200
+     else:
+          return jsonify({'message': 'Error, could not retrieve history'}), 400
+     
+
+
+@app.route('/logout', methods=['DELETE'])
+def logout():
+     data = request.args.delete
+     firstname = request.args.delete('fname')
+     lastname = request.args.delete('lname')
+     email = request.args.delete('email')
+     password = request.args.delete('password')
+
+     Missing_fields = []
+     if not firstname:
+          Missing_fields('firstname')
+     if not lastname:
+          Missing_fields('lastname')
+     if not email:
+          Missing_fields('email')
+     if not password:
+          Missing_fields('password')
+
+     if Missing_fields:
+          return ((Missing_fields, ['Missing_fields']))
+     
+     if (firstname and lastname and email and password):
+          return jsonify({'Message': 'Credentials deleted successfuly'})
+     else:
+          return jsonify({'Message': 'Credentials can not be deleted'})
+
+
+@app.route('/logdel', methods=['DELETE'])
+def logdel():
+     data = request.data.delete
+     firstname = data.delete('fname')
+     lastname = data.delete('lname')
+     email = data.delete('email')
+     password = data.delete('password')
+
+     Missing_fields = []
+
+     if not firstname:
+          Missing_fields('firstname')
+     if not lastname:
+          Missing_fields('lastname')
+     if not email:
+          Missing_fields('email')
+     if not password:
+          Missing_fields('password')
+
+     if Missing_fields:
+          return jsonify({Missing_fields: 'missing_fields'})
+
+
+
+     if  (firstname and lastname and email and password):
+          return ('message': 'information deleted successfuly')
+     else:
+          return ('message': 'information could not be delete')
+
+
+
+
+          
+     
+             
     
 
     
