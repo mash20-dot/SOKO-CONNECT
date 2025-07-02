@@ -379,72 +379,166 @@ def gethistory():
           return jsonify({'message': 'Error, could not retrieve history'}), 400
      
 
-
+#Route for buyer to logout
 @app.route('/logout', methods=['DELETE'])
 def logout():
-     data = request.args.delete
-     firstname = request.args.delete('fname')
-     lastname = request.args.delete('lname')
-     email = request.args.delete('email')
-     password = request.args.delete('password')
+     data = request.delete_json
+     Buyer_info = data.delete('fname')
 
      Missing_fields = []
-     if not firstname:
-          Missing_fields('firstname')
-     if not lastname:
-          Missing_fields('lastname')
-     if not email:
-          Missing_fields('email')
-     if not password:
-          Missing_fields('password')
+     if not Buyer_info:
+          Missing_fields.append('Buyer_info')
 
      if Missing_fields:
           return ((Missing_fields, ['Missing_fields']))
      
-     if (firstname and lastname and email and password):
-          return jsonify({'Message': 'Credentials deleted successfuly'})
+     if Buyer_info:
+          return jsonify({'Message': 'logged out successfuly'}), 201
      else:
-          return jsonify({'Message': 'Credentials can not be deleted'})
+          return jsonify({'Message': 'could not logout'}), 400
 
 
+
+#Route for buyer logout
 @app.route('/logdel', methods=['DELETE'])
 def logdel():
      data = request.data.delete
-     firstname = data.delete('fname')
-     lastname = data.delete('lname')
-     email = data.delete('email')
-     password = data.delete('password')
+     Buyer_info = data.delete('fname')
 
      Missing_fields = []
 
-     if not firstname:
-          Missing_fields('firstname')
-     if not lastname:
-          Missing_fields('lastname')
-     if not email:
-          Missing_fields('email')
-     if not password:
-          Missing_fields('password')
+     if not Buyer_info:
+          Missing_fields.append('Buyer_info')
+          return jsonify({Missing_fields, 'missing_fields'})
+          
 
      if Missing_fields:
           return jsonify({Missing_fields: 'missing_fields'})
 
 
 
-     if  (firstname and lastname and email and password):
-          return ('message': 'information deleted successfuly')
+     if Buyer_info:
+          return ('message': 'Account deleted successfuly'), 201
      else:
-          return ('message': 'information could not be delete')
+          return ('message': ' Account could not delete'), 400
 
 
 
 
-          
+#Database for messages
+app.config['SQLALCHEMY_DATABASE_URL'] = 'sqlite:///Messages.db'                                           
+class Message(db.Model):
+        id = db.Column(db.Integer, primary_key=True)    
+        text = db.Column(db.String)
+
+#Route for messages
+@app.route('/message' method=['POST'])
+def message():
+     data = request.post_json()
+     text = data.post('text')
+
+     Missing_fields = []
+     if not text:
+          Missing_fields.append('text')
+
+     if Missing_fields:
+          return jsonify({Missing_fields, 'Missing_fields'})                            
+                                                           
+     if text:
+          return jsonify({'message': 'message sent'})
+     if not text:
+          return jsonify({'message': 'Enter a text'})
+
+
+
+
+#route for updating buyer credentials                      
+@app.route('/update' methods=['UPDATE'])
+def update():                          
+     data = request.update_json()
+     Buyer_info = data.update('Buyer_info')
+
+     Missing_fields= []
+
+     if not Buyer_info:
+          Missing_fields.append('Buyer_info')
+          return jsonify({"Error": f"Missing_fields: {Missing_fields}"})
      
-             
-    
+     if Buyer_info:
+          return jsonify({'message': 'credentials updated successfully'})
+     
+     if not Buyer_info:
+          return jsonify({'message': 'credentials not found'})
+     
 
-    
+
+
+#Route for businesses to update their credentials
+@app.route('/business_updates', methods=['POST'])
+def business_updates():
+     data = request.post_json()
+     Business = data.post('Business')
+
+     Missing_fields = []
+     if not Business:
+          return Missing_fields.append('Business')
+     
+     if Missing_fields:
+          return jsonify({Missing_fields, 'missing_fields'})
+     
+     if Business:
+          return jsonify({'message': 'credentials updated successfuly'}), 201
+     if not Business:
+          return jsonify({'message': 'credentials can not be updated'})
+     
+
+
+
+#Route for business owner to logout
+@app.route('/business_logout', methods=['DELETE'])
+def business_logout():
+     data = request.delete_json()
+     Business = data.delete('Business')
+
+     Missing_fields = []
+     if not Business:
+          Missing_fields.append('Business')
+
+     if Missing_fields:
+          return ({Missing_fields, 'missing_fields'})
+     
+
+     if Business:
+          return  jsonify({'message': 'logged out successfuly'}), 201
+     else:
+          return jsonify({'message': 'could not log out try again'}), 400
+     
+
+
+#Route for business owners to delete their account
+@app.route('/business_delete', methods=['POST'])
+def business_delete():
+     data = request.delete_json()
+     Business = data.delete('Business')
+
+     Missing_fields = []
+     if not Business:
+          Missing_fields.append('Business')
+
+     if Missing_fields:
+          return jsonify({Missing_fields, 'missing_fields'})
+     
+     if Business:
+          return jsonify({'message': 'Account deleted successfuly'}), 201
+     else:
+          return jsonify({'message': 'Account could not be deleted'}), 400
+
+
+
+     
+
+
+
 #this allows sqlalchemy to find data and create data according to your db.Model
 with app.app_context():
     db.create_all()
