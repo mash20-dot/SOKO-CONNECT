@@ -532,6 +532,69 @@ def business_delete():
           return jsonify({'message': 'Account deleted successfuly'}), 201
      else:
           return jsonify({'message': 'Account could not be deleted'}), 400
+     
+
+
+
+#Admin data structure
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sokoconnect.db'
+db = SQLAlchemy(app)
+
+class Admin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)    
+    Full_name = db.Column(db.String(50))
+    email = db.Column(db.String(150), unique=True,)
+    password = db.Column(db.String(150),)
+
+
+
+#Route for admins to create account
+@app.route('/Admin_Route', methods=['POST'])
+def admin():
+     data = request.get_json()
+     Full_name = data.get('Full_name')
+     email = data.get('email')
+     password = data.get('password')
+
+     Missing_fields = []
+     if not Full_name:
+          Missing_fields('Full_name')
+     if not email:
+          Missing_fields('email')
+     if not password:
+          Missing_fields('Password')
+          return jsonify({"Error": f"Missing_fields: {Missing_fields}"}), 400
+     
+
+     if (Full_name and email and password):
+          return jsonify({'message': 'Account created successfuly'}), 201
+     if (Full_name and email and password):
+          return jsonify({'message': 'Account could not be created'}),400
+     
+
+@app.route('/adminlogin' methods=['POST'])
+def adminlogin():
+     data = request.get_json()
+     Full_name = data.get('Full_name')
+     email = data.get('email')
+     password = data.get('password')
+
+
+     Missing_fields = []
+     if not Full_name:
+          Missing_fields('Full_name')
+     if not email:
+          Missing_fields('email')
+     if not password:
+          Missing_fields('Password')
+          return jsonify({"Error": f"Missing_fields: {Missing_fields}"}), 400
+     
+     if Admin:
+          return jsonify({'message': 'logged in sucessfuly'}), 201
+     if not Admin:
+          return jsonify({'message': 'could not login'}), 400
+     
+
 
 
 
