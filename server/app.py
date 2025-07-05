@@ -30,7 +30,6 @@ class Buyer_info(db.Model):
 
 
 
-
 #signup route for buyers
 @app.route('/register', methods=['POST'])
 def register():
