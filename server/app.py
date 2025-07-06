@@ -1,3 +1,8 @@
+from datetime import datetime
+from datetime import timedelta
+from datetime import timezone
+
+
 from flask import Flask, request,  jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -8,11 +13,39 @@ from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
 from flask_jwt_extended import set_access_cookies
 from flask_jwt_extended import unset_jwt_cookies
+from flask_jwt_extended import get_jwt
 
+#importing key from dotenv
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 
 
 app = Flask(__name__)
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-default-secret')
+
+# Seting up the Flask-JWT-Extended extension
+app.config
+jwt = JWTManager(app)
+
+# Using an `after_request` callback, we refresh any token that is within 30
+# minutes of expiring. Change the timedeltas to match the needs of your application.
+@app.after_request
+def refresh_expiring_jwts(response):
+    try:
+        exp_timestamp = get_jwt()["exp"]
+        now = datetime.now(timezone.utc)
+        target_timestamp = datetime.timestamp(now + timedelta(minutes=60))
+        if target_timestamp > exp_timestamp:
+            access_token = create_access_token(identity=get_jwt_identity())
+            set_access_cookies(response, access_token)
+        return response
+    except (RuntimeError, KeyError):
+      #return response if jwt is invalid
+        return response
+
+
 
 
 #database structure
@@ -26,19 +59,24 @@ class Buyer_info(db.Model):
     email = db.Column(db.String(150), unique=True,)
     password = db.Column(db.String(150),)
 
-
-
-
-
 #signup route for buyers
 @app.route('/register', methods=['POST'])
 def register():
         data = request.get_json()
-        firstname = data.get('fname')
-        lastname = data.get('lname')
-        email = data.get('email') 
-        password = data.get('password')
+        firstname = request.json.get('fname')
+        lastname =request.json.get('lname')
+        email = request.json.get('email') 
+        password = request.json.get('password')
 
+        
+        try:
+              if firstname == None and lastname == None and email == None and password == None:
+                    return jsonify({"message": "Please fill in all fields"}), 400
+        except TypeError:
+            return jsonify({"message": "Invalid input"}), 400
+        
+        #hash the password, making it invisible
+        hashed_password = generate_password_hash(password)
 
         #checks for every empty space and save it if none of that empty space is not provided it throws that error
         Missing_fields= []
@@ -52,70 +90,74 @@ def register():
         if not password:
             Missing_fields.append(password)
             return jsonify({"Error": f"Missing_fields: {Missing_fields}"}), 400
-
-        if (firstname and lastname and email and password):
-            return jsonify({'message': 'successfully signed up'}), 201
-
-        #Check if email already exists
+            #if all fields are provided, it creates an access token
+          
+          #Check if email already exists
         existing_user = Buyer_info.query.filter_by(email=email).first()
         if existing_user:
-            return jsonify({"error": "Email already registered"}), 409
-    
-    
-
-        #hash the password, making it invisible
-        hashed_password = generate_password_hash(password)
-
-
-        #saves user info in the database
+               return jsonify({"message": "Email already exists"}), 400
+            
+          #saves user info in the database
         new_user = Buyer_info(firstname=firstname, lastname=lastname, email=email, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
-   
-    
+            
+        access_token = create_access_token(identity=email and firstname and lastname and password)
+        return jsonify(access_token=access_token)
+
         
-    
-
-
+       
+       
 #login route for buyers
 @app.route('/login', methods=['POST'])
+@jwt_required()
 def login():
-
-        data = ({"user":
-           "firstname"
-           "lastname"
-           "email"
-           "password"
-        })
-
+       
         data = request.get_json()
         firstname = data.get('fname')
         lastname = data.get('lname')
         email = data.get('email')
         password = data.get('password')
-
-
-        #find a user by email 
+       
+       
+       #find a user by email 
         user = Buyer_info.query.filter_by(email=email).first()
-
+        
         #If user exists and password matches
         if user and check_password_hash(user.password, password):
             return jsonify({"message": "Successfully logged in"}), 201
-
+        
         if not (firstname and lastname and email and password):
             return jsonify({"message": "Invalid credentials"}), 401
     
+        
+        # Accessing the identity of the current user with get_jwt_identity
+        current_user = get_jwt_identity()
+        return jsonify(logged_in_as=current_user), 200
 
-        Missing_fields = []
-        if not firstname:
-            Missing_fields.append('fname')
-        if not lastname:
-            Missing_fields.append('lname')
-        if not email:
-            Missing_fields.append('email')
-        if not password:
-            Missing_fields.append('password')
-            return jsonify({f"Missing_fields": {Missing_fields}},"fill in all blank spaces"), 400
+
+
+#Route for buyer to logout
+@app.route('/logout', methods=['POST'])
+def logout():
+     response = jsonify({"msg": "logout successful"})
+     #this removes the jwt cookies from the user's browser, enbling them to log out
+     unset_jwt_cookies(response)
+     return response
+
+    
+
+
+
+
+        
+
+        
+
+        
+
+        
+
     
 
     
@@ -296,7 +338,7 @@ def getproduct():
     #not working yet have to fix it    
     #if product in products:
          #return jsonify({'message': 'product already uploaded'})
-    product = products.query.filter_by(product_name=product_name).first()
+    #product = products.query.filter_by(product_name=product_name).first()
 
     if product:
          return jsonify({'message': 'items retrieved successfully',
@@ -385,23 +427,6 @@ def gethistory():
           return jsonify({'message': 'Error, could not retrieve history'}), 400
      
 
-#Route for buyer to logout
-@app.route('/logout', methods=['DELETE'])
-def logout():
-     data = request.delete_json
-     Buyer_info = data.delete('fname')
-
-     Missing_fields = []
-     if not Buyer_info:
-          Missing_fields.append('Buyer_info')
-
-     if Missing_fields:
-          return ((Missing_fields, ['Missing_fields']))
-     
-     if Buyer_info:
-          return jsonify({'Message': 'logged out successfuly'}), 201
-     else:
-          return jsonify({'Message': 'could not logout'}), 400
 
 
 
@@ -423,10 +448,10 @@ def logdel():
 
 
 
-     if Buyer_info:
-          return ('message': 'Account deleted successfuly'), 201
-     else:
-          return ('message': ' Account could not delete'), 400
+     #if Buyer_info:
+          #return ('message': 'Account deleted successfuly'), 201
+     #else:
+          #return ('message': ' Account could not delete'), 400
 
 
 
@@ -438,7 +463,7 @@ class Message(db.Model):
         text = db.Column(db.String)
 
 #Route for messages
-@app.route('/message' method=['POST'])
+@app.route('/message', methods=['POST'])
 def message():
      data = request.post_json()
      text = data.post('text')
@@ -459,7 +484,7 @@ def message():
 
 
 #route for updating buyer credentials                      
-@app.route('/update' methods=['UPDATE'])
+@app.route('/update', methods=['UPDATE'])
 def update():                          
      data = request.update_json()
      Buyer_info = data.update('Buyer_info')
@@ -544,7 +569,7 @@ def business_delete():
 
 #Admin data structure
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sokoconnect.db'
-db = SQLAlchemy(app)
+#db = SQLAlchemy(app)
 
 class Admin(db.Model):
     id = db.Column(db.Integer, primary_key=True)    
@@ -578,7 +603,7 @@ def admin():
           return jsonify({'message': 'Account could not be created'}),400
      
 
-@app.route('/adminlogin' methods=['POST'])
+@app.route('/adminlogin', methods=['POST'])
 def adminlogin():
      data = request.get_json()
      Full_name = data.get('Full_name')
