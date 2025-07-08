@@ -52,7 +52,7 @@ def refresh_expiring_jwts(response):
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sokoconnect.db'
 db = SQLAlchemy(app)
 
-class Buyer_info(db.Model):
+class Buyer_user(db.Model):
     id = db.Column(db.Integer, primary_key=True)    
     firstname = db.Column(db.String(50))
     lastname = db.Column(db.String(50))
@@ -62,82 +62,66 @@ class Buyer_info(db.Model):
 #signup route for buyers
 @app.route('/register', methods=['POST'])
 def register():
-        data = request.get_json()
-        firstname = request.json.get('fname')
-        lastname =request.json.get('lname')
-        email = request.json.get('email') 
-        password = request.json.get('password')
-
+          data = request.get_json()
+          firstname = data.get('fname')
+          lastname = data.get('lname')
+          email = data.get('email')
+          password = data.get('password')
+#THE PROBLEM IS WITH THE MISSING FIELDS
+          Missing_fields = []
+          #if not firstname:
+               #Missing_fields.append('firstname')
+          #if not lastname:
+               #Missing_fields.append('lastname')
+          if not email:
+               Missing_fields.append('email')
+          if not password:
+               Missing_fields.append('password')
+            
+          if Missing_fields:   
+           return jsonify({"Error": f"Missing_fields: {Missing_fields}"}), 400
         
-        try:
-              if firstname == None and lastname == None and email == None and password == None:
-                    return jsonify({"message": "Please fill in all fields"}), 400
-        except TypeError:
-            return jsonify({"message": "Invalid input"}), 400
         
-        #hash the password, making it invisible
-        hashed_password = generate_password_hash(password)
-
-        #checks for every empty space and save it if none of that empty space is not provided it throws that error
-        Missing_fields= []
-
-        if not firstname:
-            Missing_fields.append(firstname)
-        if not lastname:
-            Missing_fields.append(lastname)
-        if not email:
-            Missing_fields.append(email)
-        if not password:
-            Missing_fields.append(password)
-            return jsonify({"Error": f"Missing_fields: {Missing_fields}"}), 400
-            #if all fields are provided, it creates an access token
-          
           #Check if email already exists
-        existing_user = Buyer_info.query.filter_by(email=email).first()
-        if existing_user:
+          existing_user = Buyer_user.query.filter_by(email=email).first()
+          if existing_user:
                return jsonify({"message": "Email already exists"}), 400
-            
-          #saves user info in the database
-        new_user = Buyer_info(firstname=firstname, lastname=lastname, email=email, password=hashed_password)
-        db.session.add(new_user)
-        db.session.commit()
-            
-        access_token = create_access_token(identity=email and firstname and lastname and password)
-        return jsonify(access_token=access_token)
-
         
-       
-       
+          #hash the password, making it invisible
+          hashed_password = generate_password_hash(password)
+
+          #saves user info in the database
+          new_user = Buyer_user(firstname=firstname, lastname=lastname, email=email, password=hashed_password)
+          db.session.add(new_user)
+          db.session.commit()
+          return jsonify({'message': 'Account created successfuly'}), 201
+
+
+#THIS LOGIN ROUTE IS WORKING PERFECTLY DONT TOUCH IT
 #login route for buyers
 @app.route('/login', methods=['POST'])
-@jwt_required()
 def login():
        
         data = request.get_json()
-        firstname = data.get('fname')
-        lastname = data.get('lname')
         email = data.get('email')
         password = data.get('password')
-       
-       
-       #find a user by email 
-        user = Buyer_info.query.filter_by(email=email).first()
+
+        #find a user by email 
+        user = Buyer_user.query.filter_by(email=email).first()
+
+        if not user:
+             return jsonify({'message': 'User not found'}), 400
         
-        #If user exists and password matches
-        if user and check_password_hash(user.password, password):
-            return jsonify({"message": "Successfully logged in"}), 201
         
-        if not (firstname and lastname and email and password):
-            return jsonify({"message": "Invalid credentials"}), 401
-    
-        
-        # Accessing the identity of the current user with get_jwt_identity
-        current_user = get_jwt_identity()
-        return jsonify(logged_in_as=current_user), 200
+        response = jsonify({'msg': 'logged in successful'})
+        #create an access token for the user to verify their identity when visiting a protected route
+        access_token = create_access_token(identity="email and password")
+        set_access_cookies(response, access_token)
+        return response
+     
 
 
-
-#Route for buyer to logout
+        #Route for logout
 @app.route('/logout', methods=['POST'])
 def logout():
      response = jsonify({"msg": "logout successful"})
@@ -145,33 +129,17 @@ def logout():
      unset_jwt_cookies(response)
      return response
 
-    
-
-
-
-
-        
-
-        
-
-        
-
-        
-
-    
-
-    
-
 
 
 #DATABASE FOR BUSINESS PROFILE 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///business.db'
 
-class Business(db.Model):
+class Business_user(db.Model):
     id = db.Column(db.Integer, primary_key=True)    
     business_name = db.Column(db.String(50))
-    business_email = db.Column(db.String(150), unique=True,)
+    email = db.Column(db.String(150), unique=True,)
     phone = db.Column(db.String(150),)
+    password = db.Column(db.String(150),)
 
 
 #Signup form for businesses
@@ -179,82 +147,80 @@ class Business(db.Model):
 def business_user():
     data = request.get_json()
     business_name = data.get('business_name')
-    business_email = data.get('business_email')
+    email = data.get('business_email')
     phone = data.get('phone')
+    password = data.get('password')
 
-
-
+    #PROBLEM IN THIS ROUTE IS EVEN IF ITS TRUE THE SUCCESSFUL MESSAGE DOES NOT RUN 
     Missing_fields= []
 
     if not business_name:
         Missing_fields.append('business_name')
-    if not business_email:
-        Missing_fields.append('business_email')
+    if not email:
+        Missing_fields.append('email')
     if not phone:
         Missing_fields.append('phone')
-        
-        
-    
-    if Missing_fields:
+    if not password:
+        Missing_fields.append('password')
+        #if all fields are provided, it creates an access token
         return jsonify({"Error": f"Missing_fields: {Missing_fields}"}), 400
-     
+    
+    #Check if email already exists
+    existing_user = Business_user.query.filter_by(email=email).first()
+    if existing_user:
+          return jsonify({"message": "Email already exists"}), 400
+    
+    #hash the password, making it invisible
+    hashed_password = generate_password_hash(password)
 
 
-     
     #saves products/items into the database
-    new_business = Business(business_name=business_name, business_email=business_email, phone=phone,)
+    new_business = Business_user(business_name=business_name, email=email, phone=phone, password=password)
     db.session.add(new_business)
     db.session.commit()
+    return jsonify({'message': 'Account created successfuly'}),201
 
-
-
-    if (business_name and business_email and phone):
-        return jsonify({'message': 'Information uploaded successfully'})
-    else:
-        return jsonify({'message': "Error, can't upload information"})
     
+    if Business_user:
+            return jsonify({"message": "Account created successfuly"}), 201
+    else:
+            return jsonify({"message": "Account could not be created"}), 400
+
+            
+            
+     
 #LOGIN form for business
 @app.route('/getbusiness', methods=['POST'])
-
 def getbusiness():
      #get data from the database
      data = request.get_json()
      business_name = data.get('business_name')
-     business_email = data.get('business_email')
+     email = data.get('email')
      phone = data.get('phone')
      password = data.get('password')
 
 
-     Missing_fields = []
-     if not business_name:
-            Missing_fields.append('business_name')
-     if not business_email:
-            Missing_fields.append('business_email')
-     if not phone:
-            Missing_fields.append('phone')
-     if not password:
-            Missing_fields.append('password')
+     #Helps to find user by email or phone
+     business_user = Business_user.query.filter_by(email=email, phone=phone).first()
+     
+     response = jsonify({"msg": "login successful"})
+     #create an access token for the user
+     #this access token is used to authenticate the user in subsequent requests
+     if not business_user:
+          return jsonify({"message": "Business not found"}), 404
+     access_token = create_access_token(identity=email and business_name and phone and password)
+     set_access_cookies(response, access_token)
+     return response
+     
+
+     
 
 
-     if Missing_fields:
-          return jsonify({f"Missing_fields", Missing_fields,"'message': fill in all blank spaces"}), 400
+
+
     
-            
-
-
-
-
-    #Helps to find user by email or phone
-     business_user = Business.query.filter_by(
-          business_email=business_email, phone=phone).first()
      
-     
-     #conditional statements
-     if   business_user:
-          return jsonify({'message': 'Information retrieved successfully'}), 201
-     else:
-          return jsonify({'message': 'Error, information could not be retrieved'}), 404
-     
+   
      
      
     
