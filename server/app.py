@@ -115,7 +115,7 @@ def login():
         
         response = jsonify({'msg': 'logged in successful'})
         #create an access token for the user to verify their identity when visiting a protected route
-        access_token = create_access_token(identity="email and password")
+        access_token = create_access_token(identity=email)
         set_access_cookies(response, access_token)
         return response
      
@@ -168,7 +168,7 @@ def business_user():
     #Check if email already exists
     existing_user = Business_user.query.filter_by(email=email).first()
     if existing_user:
-          return jsonify({"message": "Email already exists"}), 400
+     return jsonify({"message": "Email already exists"}), 400
     
     #hash the password, making it invisible
     hashed_password = generate_password_hash(password)
@@ -208,22 +208,13 @@ def getbusiness():
      #this access token is used to authenticate the user in subsequent requests
      if not business_user:
           return jsonify({"message": "Business not found"}), 404
-     access_token = create_access_token(identity=email and business_name and phone and password)
+     access_token = create_access_token(identity=email)
      set_access_cookies(response, access_token)
      return response
      
 
      
 
-
-
-
-    
-     
-   
-     
-     
-    
 #PRODUCT CODE BASE
 #product database structure
 app.config['SQLALCHEMY_DATABASE_URL'] = 'sqlite:///product.db'                                           
@@ -236,12 +227,12 @@ class products(db.Model):
         product_images = db.Column(db.String)
 
 @app.route('/product', methods=['POST'])
+@jwt_required()
 def product():
         data = request.get_json()
         product_name = data.get('product_name')
         product_price = data.get('product_price')
         product_uses = data.get('product_uses')
-
 
         Missing_fields= []
 
@@ -262,22 +253,21 @@ def product():
         new_product = products(product_name=product_name, product_price=product_price, product_uses=product_uses)
         db.session.add(new_product)
         db.session.commit()
+        
+        # Accessing the identity of the current user with get_jwt_identity
+        current_email = get_jwt_identity()
+        pro_duct = products.query.filter_by(email=current_email)
+        if not pro_duct:
+             return jsonify({'message': 'product could not be uploaded'}), 403
+        return jsonify(logged_in_as=current_email), 200
 
-        
-             
-       
-        if product:
-             return jsonify({'message': 'Item updated successfully '}), 201
-        
-        
-        if not product:
-             return jsonify({'message': 'Error item not updated'}), 400
 
         
         
         
 #ROUTE FOR GETTING ITEMS FROM THE DATABASE
 @app.route('/getproduct', methods=['GET'])
+@jwt_required()
 def getproduct():
      
     data = request.args
@@ -313,8 +303,15 @@ def getproduct():
                          'product_uses':product_uses
                          
     }), 200
-    if not product:
+    
+    if not products:
          return jsonify({'message': 'could not retrieve item'}), 400
+     #Access the identity of thr logged in useer with get_jwt_identity
+    current_email = get_jwt_identity()
+    get_product = products.query.filter_by(email=current_email)
+    if not get_product:
+         return jsonify({'message': 'can not retrieve product'}), 403
+    return jsonify(looged_in_as=current_email), 200
     
     
     
@@ -332,6 +329,7 @@ class History(db.Model):
 
 
 @app.route('/history', methods=['POST'])
+@jwt_required()
 def history():
         data = request.get_json()
         buyer_name = data.get('buyer_name')
@@ -350,14 +348,16 @@ def history():
         if Missing_fields:
             return jsonify({"Error": f"missing_fields: {Missing_fields}"}), 400
         
-        if History:
-             return jsonify({'message': 'history stored successfuly'}), 201
-        else:
-             return jsonify({'message': 'Error, could not update history'}), 400
+        if not History:
+             return jsonify({'message': 'information could not be saved'}), 201
+        #getting user info for accessing this protected route using get_jwt_identity
+        current_user = get_jwt_identity()
+        return jsonify(logged_in_as=current_user), 200
 
 
 
 @app.route('/gethistory', methods=['GET'])
+@jwt_required()
 def gethistory():
      
      data = request.args
@@ -389,35 +389,16 @@ def gethistory():
                             'date': data
                                  
      }), 200
-     else:
-          return jsonify({'message': 'Error, could not retrieve history'}), 400
+
+     current_user = get_jwt_identity()
+     business_his = Admin.query.filter_by(email=current_email).first()
+
+     #FIX THIS
+     if not business_his:
+          return jsonify({'message': 'Access denied'}), 403
+     return jsonify(logged_in_as=current_user), 200
      
 
-
-
-
-#Route for buyer logout
-@app.route('/logdel', methods=['DELETE'])
-def logdel():
-     data = request.data.delete
-     Buyer_info = data.delete('fname')
-
-     Missing_fields = []
-
-     if not Buyer_info:
-          Missing_fields.append('Buyer_info')
-          return jsonify({Missing_fields, 'missing_fields'})
-          
-
-     if Missing_fields:
-          return jsonify({Missing_fields: 'missing_fields'})
-
-
-
-     #if Buyer_info:
-          #return ('message': 'Account deleted successfuly'), 201
-     #else:
-          #return ('message': ' Account could not delete'), 400
 
 
 
@@ -430,6 +411,7 @@ class Message(db.Model):
 
 #Route for messages
 @app.route('/message', methods=['POST'])
+@jwt_required()
 def message():
      data = request.post_json()
      text = data.post('text')
@@ -440,17 +422,20 @@ def message():
 
      if Missing_fields:
           return jsonify({Missing_fields, 'Missing_fields'})                            
-                                                           
-     if text:
-          return jsonify({'message': 'message sent'})
-     if not text:
-          return jsonify({'message': 'Enter a text'})
+                                                  
+     current_email = get_jwt_identity()
+     mess_age = Message.query.filter_by(email=current_email).first()
+
+     if not mess_age:
+          return jsonify({'message': 'unable to send message'}), 403
+     return jsonify(logged_in_as=current_email), 200
 
 
 
 
 #route for updating buyer credentials                      
 @app.route('/update', methods=['UPDATE'])
+@jwt_required()
 def update():                          
      data = request.update_json()
      Buyer_info = data.update('Buyer_info')
@@ -466,12 +451,19 @@ def update():
      
      if not Buyer_info:
           return jsonify({'message': 'credentials not found'})
+     current_email = get_jwt_identity()
+     up_date = Buyer_user.query.filter_by(email=current_email).first()
+     
+     if not up_date:
+          return jsonify({'Error': 'information can not be updated'}), 403
+     return jsonify(logged_in_as=current_email), 200
      
 
 
 
 #Route for businesses to update their credentials
 @app.route('/business_updates', methods=['POST'])
+@jwt_required()
 def business_updates():
      data = request.post_json()
      Business = data.post('Business')
@@ -488,47 +480,26 @@ def business_updates():
      if not Business:
           return jsonify({'message': 'credentials can not be updated'})
      
+     current_email = get_jwt_identity()
+     bus_up = Business_user.query.filter_by(email=current_email)
 
+     if not bus_up:
+          return jsonify({'Error':'information can not be updated'}), 403
+     return jsonify(logged_in_as=current_email), 200
 
-
-#Route for business owner to logout
-@app.route('/business_logout', methods=['DELETE'])
-def business_logout():
-     data = request.delete_json()
-     Business = data.delete('Business')
-
-     Missing_fields = []
-     if not Business:
-          Missing_fields.append('Business')
-
-     if Missing_fields:
-          return ({Missing_fields, 'missing_fields'})
-     
-
-     if Business:
-          return  jsonify({'message': 'logged out successfuly'}), 201
-     else:
-          return jsonify({'message': 'could not log out try again'}), 400
      
 
 
 #Route for business owners to delete their account
-@app.route('/business_delete', methods=['POST'])
+@app.route('/business_delete', methods=['DELETE'])
+@jwt_required()
 def business_delete():
-     data = request.delete_json()
-     Business = data.delete('Business')
-
-     Missing_fields = []
-     if not Business:
-          Missing_fields.append('Business')
-
-     if Missing_fields:
-          return jsonify({Missing_fields, 'missing_fields'})
      
-     if Business:
-          return jsonify({'message': 'Account deleted successfuly'}), 201
-     else:
-          return jsonify({'message': 'Account could not be deleted'}), 400
+     current_email = get_jwt_identity()
+     dele_te = Business_user.query.filter_by(email=current_email)
+     if not dele_te:
+          return jsonify({'Error': 'Account could not be deleted'}), 403
+     return jsonify(logged_in_as=current_email), 200
      
 
 
@@ -562,10 +533,17 @@ def admin():
           Missing_fields('Password')
           return jsonify({"Error": f"Missing_fields: {Missing_fields}"}), 400
      
+      #hash the password, making it invisible
+     hashed_password = generate_password_hash(password)
 
-     if (Full_name and email and password):
+     #saves user info in the database
+     new_user = Buyer_user(Full_name=Full_name, email=email, password=hashed_password)
+     db.session.add(new_user)
+     db.session.commit()
+
+     if Admin:
           return jsonify({'message': 'Account created successfuly'}), 201
-     if (Full_name and email and password):
+     if not Admin:
           return jsonify({'message': 'Account could not be created'}),400
      
 
@@ -586,15 +564,29 @@ def adminlogin():
           Missing_fields('Password')
           return jsonify({"Error": f"Missing_fields: {Missing_fields}"}), 400
      
-     if Admin:
-          return jsonify({'message': 'logged in sucessfuly'}), 201
+     
      if not Admin:
           return jsonify({'message': 'could not login'}), 400
      
+     response = jsonify({'msg': 'logged in successful'})
+     #create an access token for the admin to verify their identity when visiting a protected route
+     access_token = create_access_token(identity=admin.email)
+     set_access_cookies(response, access_token)
+     return response
+     
+#Route protecting users from accessing the admin dashboard
+@app.route('/admindash', methods=['GET'])
+@jwt_required()
+def dashboard():
+    
+     current_email = get_jwt_identity()
+     admin = Admin.query.filter_by(email=current_email).first()
 
-
-
-
+     if not admin:
+          return jsonify({'message': 'Access denied'}), 403
+     return jsonify(logged_in_as=current_email), 200
+     
+     #USE THIS ROUTE TO CORRECT PROTECTED ROUTES
      
 
 
