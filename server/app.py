@@ -63,16 +63,16 @@ class Buyer_user(db.Model):
 @app.route('/register', methods=['POST'])
 def register():
           data = request.get_json()
-          firstname = data.get('fname')
-          lastname = data.get('lname')
+          firstname = data.get('firstname')
+          lastname = data.get('lastname')
           email = data.get('email')
           password = data.get('password')
-#THE PROBLEM IS WITH THE MISSING FIELDS
+          
           Missing_fields = []
-          #if not firstname:
-               #Missing_fields.append('firstname')
-          #if not lastname:
-               #Missing_fields.append('lastname')
+          if not firstname:
+               Missing_fields.append('firstname')
+          if not lastname:
+               Missing_fields.append('lastname')
           if not email:
                Missing_fields.append('email')
           if not password:
@@ -113,7 +113,7 @@ def login():
              return jsonify({'message': 'User not found'}), 400
         
         
-        response = jsonify({'msg': 'logged in successful'})
+        response = jsonify({'msg': 'logged in successfully'})
         #create an access token for the user to verify their identity when visiting a protected route
         access_token = create_access_token(identity=email)
         set_access_cookies(response, access_token)
@@ -141,17 +141,16 @@ class Business_user(db.Model):
     phone = db.Column(db.String(150),)
     password = db.Column(db.String(150),)
 
-
+#This route is working perfectly do not touch it
 #Signup form for businesses
 @app.route('/business', methods=['POST'])
 def business_user():
     data = request.get_json()
     business_name = data.get('business_name')
-    email = data.get('business_email')
+    email = data.get('email')
     phone = data.get('phone')
     password = data.get('password')
-
-    #PROBLEM IN THIS ROUTE IS EVEN IF ITS TRUE THE SUCCESSFUL MESSAGE DOES NOT RUN 
+    
     Missing_fields= []
 
     if not business_name:
@@ -162,48 +161,42 @@ def business_user():
         Missing_fields.append('phone')
     if not password:
         Missing_fields.append('password')
+    
+    if Missing_fields:  
         #if all fields are provided, it creates an access token
         return jsonify({"Error": f"Missing_fields: {Missing_fields}"}), 400
     
     #Check if email already exists
     existing_user = Business_user.query.filter_by(email=email).first()
     if existing_user:
-     return jsonify({"message": "Email already exists"}), 400
+          return jsonify({"message": "Email already exists"}), 400
     
     #hash the password, making it invisible
     hashed_password = generate_password_hash(password)
-
-
+    
     #saves products/items into the database
-    new_business = Business_user(business_name=business_name, email=email, phone=phone, password=password)
+    new_business = Business_user(business_name=business_name, email=email, phone=phone, password=hashed_password)
     db.session.add(new_business)
     db.session.commit()
-    return jsonify({'message': 'Account created successfuly'}),201
+    return jsonify({'message': 'Account created successfully'}),201
 
-    
-    if Business_user:
-            return jsonify({"message": "Account created successfuly"}), 201
-    else:
-            return jsonify({"message": "Account could not be created"}), 400
 
             
             
-     
+ #THIS ROUTE IS WORKING PERFECTLY DO NOT TOUCH IT    
 #LOGIN form for business
 @app.route('/getbusiness', methods=['POST'])
 def getbusiness():
      #get data from the database
      data = request.get_json()
-     business_name = data.get('business_name')
      email = data.get('email')
-     phone = data.get('phone')
      password = data.get('password')
 
 
      #Helps to find user by email or phone
-     business_user = Business_user.query.filter_by(email=email, phone=phone).first()
+     business_user = Business_user.query.filter_by(email=email).first()
      
-     response = jsonify({"msg": "login successful"})
+     response = jsonify({"msg": "logged in successful"})
      #create an access token for the user
      #this access token is used to authenticate the user in subsequent requests
      if not business_user:
@@ -585,8 +578,7 @@ def dashboard():
      if not admin:
           return jsonify({'message': 'Access denied'}), 403
      return jsonify(logged_in_as=current_email), 200
-     
-     #USE THIS ROUTE TO CORRECT PROTECTED ROUTES
+
      
 
 
