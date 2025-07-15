@@ -1,6 +1,6 @@
 from flask import request, jsonify, Blueprint
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models import db, Buyer_user, Business_user
+from main.models import db, Buyer_user, Business_user
 
 
 change = Blueprint('/change', __name__)

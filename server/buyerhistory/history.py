@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended  import get_jwt_identity
-from models import db, History
+from main.models import db, History
 
 buyerhistory = Blueprint('buyerhistory', __name__)
 

@@ -1,5 +1,4 @@
 from flask import  Blueprint, request, jsonify
-from models import Buyer_user, Business_user
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended  import get_jwt_identity
 from flask_jwt_extended  import jwt_required
@@ -11,9 +10,9 @@ from werkzeug.security  import generate_password_hash, check_password_hash
 from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
-from models import db, Buyer_user, Business_user
+from main.models import db, Buyer_user, Business_user
 
-auth = Blueprint('auth_blueprint', __name__)
+auth = Blueprint('auth', __name__)
 
 
 

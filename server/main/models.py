@@ -8,7 +8,7 @@ class Buyer_user(db.Model):
     firstname = db.Column(db.String(50))
     lastname = db.Column(db.String(50))
     email = db.Column(db.String(150), unique=True,)
-    password = db.Column(db.String(150),)
+    password = db.Column(db.String(300),)
 
     
 
@@ -18,7 +18,7 @@ class Business_user(db.Model):
     business_name = db.Column(db.String(50))
     email = db.Column(db.String(150), unique=True,)
     phone = db.Column(db.String(150),)
-    password = db.Column(db.String(150),)
+    password = db.Column(db.String(300),)
 
 
 #db model for buyer purchase history
@@ -33,12 +33,11 @@ class products(db.Model):
         product_name = db.Column(db.String(50))
         product_price = db.Column(db.String(50))
         product_uses = db.Column(db.String(1000))
-        product_images = db.Column(db.String)
 
 
 class Message(db.Model):
         id = db.Column(db.Integer, primary_key=True)    
-        text = db.Column(db.String)
+        text = db.Column(db.String(1000))
 
 
 
