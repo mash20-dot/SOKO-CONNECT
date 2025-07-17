@@ -19,11 +19,6 @@ def update():
           Missing_fields.append('Buyer_info')
           return jsonify({"Error": f"Missing_fields: {Missing_fields}"})
      
-     if Buyer_info:
-          return jsonify({'message': 'credentials updated successfully'})
-     
-     if not Buyer_info:
-          return jsonify({'message': 'credentials not found'})
      current_email = get_jwt_identity()
      up_date = Buyer_user.query.filter_by(email=current_email).first()
      
@@ -46,12 +41,8 @@ def business_updates():
           return Missing_fields.append('Business')
      
      if Missing_fields:
-          return jsonify({Missing_fields, 'missing_fields'})
-     
-     if Business:
-          return jsonify({'message': 'credentials updated successfuly'}), 201
-     if not Business:
-          return jsonify({'message': 'credentials can not be updated'})
+          return jsonify({"Error": f"Missing_fields: {Missing_fields}"}), 400
+
      
      current_email = get_jwt_identity()
      bus_up = Business_user.query.filter_by(email=current_email)

@@ -39,7 +39,7 @@ def admin():
      return jsonify({'message': 'Account created successfully'}), 201
      
 
-@add.route('/adminlogin', methods=['POST'])
+@add.route('/Adminlogin', methods=['POST'])
 def login():
      data = request.get_json()
      Full_name = data.get('Full_name')
@@ -65,12 +65,17 @@ def login():
         return jsonify({'message': 'Invalid credentials'}), 400
 
      
-     response = jsonify({'msg': 'logged in successful'})
+     
      #create an access token for the admin 
      access_token = create_access_token(identity=admin.email)
+     
+     response = jsonify({
+          'msg': 'logged in successful',
+            'access_token':access_token})
      #this token is stored in a cookie with this to verify their identity when visiting a protected route
      set_access_cookies(response, access_token)
      return response
+     
      
 #Route protecting users from accessing the admin dashboard
 @add.route('/admindash', methods=['GET'])

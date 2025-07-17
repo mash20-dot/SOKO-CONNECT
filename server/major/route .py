@@ -12,14 +12,14 @@ from datetime import timedelta
 from datetime import timezone
 from main.models import db, Buyer_user, Business_user
 
-auth = Blueprint('auth', __name__)
+major = Blueprint('major', __name__)
 
 
 
 
 # Using an `after_request` callback, we refresh any token that is within 30
 # minutes of expiring. Change the timedeltas to match the needs of your application.
-@auth.after_request
+@major.after_request
 def refresh_expiring_jwts(response):
     try:
         exp_timestamp = get_jwt()["exp"]
@@ -38,7 +38,7 @@ def refresh_expiring_jwts(response):
 
 
 #signup route for buyers
-@auth.route('/register', methods=['POST'])
+@major.route('/register', methods=['POST'])
 def register():
         data = request.get_json()
         firstname = data.get('firstname')
@@ -60,7 +60,7 @@ def register():
            return jsonify({"Error": f"Missing_fields: {Missing_fields}"}), 400
         
         
-        #Check if email already exists
+        #find's email from db and compare if email already exist
         existing_user = Buyer_user.query.filter_by(email=email).first()
         if existing_user:
             return jsonify({"message": "Email already exists"}), 400
@@ -78,23 +78,33 @@ def register():
 
 #THIS LOGIN ROUTE IS WORKING PERFECTLY DONT TOUCH IT
 #login route for buyers
-@auth.route('/login', methods=['POST'])
+@major.route('/login', methods=['POST'])
 def login():
        
         data = request.get_json()
         email = data.get('email')
         password = data.get('password')
 
-        #find a user by email 
+        #find user by email
         user = Buyer_user.query.filter_by(email=email).first()
 
         if not user:
              return jsonify({'message': 'User not found'}), 400
+
+        #hashes the entered password and comapare it to the hash password in the db
+        if check_password_hash(user.password, password):
+            pass
+        else:
+            return jsonify({'message': 'Invalid password'}), 401
+
         
         
-        response = jsonify({'msg': 'logged in successfully'})
         #create an access token for the user to verify their identity when visiting a protected route
         access_token = create_access_token(identity=email)
+        
+        response = jsonify({
+             'msg': 'logged in successfully',
+               'access_token':access_token})
         set_access_cookies(response, access_token)
         return response
      
@@ -102,7 +112,7 @@ def login():
 
 #This route is working perfectly do not touch it
 #Signup form for businesses
-@auth.route('/business', methods=['POST'])
+@major.route('/business', methods=['POST'])
 def business_user():
     data = request.get_json()
     business_name = data.get('business_name')
@@ -125,7 +135,7 @@ def business_user():
         #if all fields are provided, it creates an access token
         return jsonify({"Error": f"Missing_fields: {Missing_fields}"}), 400
     
-    #Check if email already exists
+    #Check if email already exists by getting it from the db
     existing_user = Business_user.query.filter_by(email=email).first()
     if existing_user:
           return jsonify({"message": "Email already exists"}), 400
@@ -144,7 +154,7 @@ def business_user():
             
  #THIS ROUTE IS WORKING PERFECTLY DO NOT TOUCH IT    
 #LOGIN form for business
-@auth.route('/getbusiness', methods=['POST'])
+@major.route('/getbusiness', methods=['POST'])
 def getbusiness():
      #get data from the database
      data = request.get_json()
@@ -152,15 +162,28 @@ def getbusiness():
      password = data.get('password')
 
 
-     #Helps to find user by email or phone
+     #find user by email
      business_user = Business_user.query.filter_by(email=email).first()
      
-     response = jsonify({"msg": "logged in successful"})
+     
+     
+     if not business_user:
+          return jsonify({"message": "Invalid email"}), 404
+     
+     #hashes the entered password and comapare it to the hash password in the db
+     if check_password_hash(business_user.password, password):
+        pass
+     else:
+        return jsonify({'message': 'Invalid password'}), 401
+
      #create an access token for the user
      #this access token is used to authenticate the user in subsequent requests
-     if not business_user:
-          return jsonify({"message": "Business not found"}), 404
      access_token = create_access_token(identity=email)
+     
+     response = jsonify({
+        "msg": "logged in successful",
+          "access_token":access_token})
+     
      set_access_cookies(response, access_token)
      return response
      

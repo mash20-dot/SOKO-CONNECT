@@ -82,8 +82,6 @@ def getproduct():
                          
     }), 200
     
-    if not products:
-         return jsonify({'message': 'could not retrieve item'}), 400
      #Access the identity of thr logged in useer with get_jwt_identity
     current_email = get_jwt_identity()
     get_product = products.query.filter_by(email=current_email)
