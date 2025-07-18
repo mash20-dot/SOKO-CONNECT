@@ -16,7 +16,8 @@ def message():
           Missing_fields.append('text')
 
      if Missing_fields:
-          return jsonify({Missing_fields, 'Missing_fields'})                            
+          return jsonify({"Error": f"Missing_fields: {Missing_fields}"}), 400
+                             
                                                   
      current_email = get_jwt_identity()
      mess_age = Message.query.filter_by(email=current_email).first()

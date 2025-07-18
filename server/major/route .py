@@ -15,16 +15,15 @@ from main.models import db, Buyer_user, Business_user
 major = Blueprint('major', __name__)
 
 
-
-
-# Using an `after_request` callback, we refresh any token that is within 30
-# minutes of expiring. Change the timedeltas to match the needs of your application.
+# Define how early before expiration you want to refresh the token
+REFRESH_WINDOW_MINUTES = 60
+#Refreshing token  
 @major.after_request
 def refresh_expiring_jwts(response):
     try:
         exp_timestamp = get_jwt()["exp"]
         now = datetime.now(timezone.utc)
-        target_timestamp = datetime.timestamp(now + timedelta(minutes=60))
+        target_timestamp = datetime.timestamp(now + timedelta(minutes=REFRESH_WINDOW_MINUTES))
         if target_timestamp > exp_timestamp:
             access_token = create_access_token(identity=get_jwt_identity())
             set_access_cookies(response, access_token)
