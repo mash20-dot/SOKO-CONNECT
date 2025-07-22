@@ -65,23 +65,18 @@ def gethistory():
      if Missing_fields:
           return jsonify({"Error": f"missing_fields: {Missing_fields}"}), 400
      
-    
-    
-     #Filters the history with buyer_name
-     history = History.query.filter_by(buyer_name=buyer_name).first()
-     if history:
-          return jsonify({  'message': 'Data retrieved',
-                            'buyer_name': buyer_name,
-                            'buyer_product': buyer_product,
-                            'date': data
-                                 
-     }), 200
+         
 
      current_email = get_jwt_identity()
      business_his = History.query.filter_by(email=current_email).first()
 
      if not business_his:
           return jsonify({'message': 'Access denied'}), 403
-     return jsonify(logged_in_as=current_email), 200
      
+     return jsonify({  'message': 'Data retrieved',
+                            'buyer_name': buyer_name,
+                            'buyer_product': buyer_product,
+                            'date': data
+                                 
+     }), 200
 

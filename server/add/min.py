@@ -42,14 +42,11 @@ def admin():
 @add.route('/Adminlogin', methods=['POST'])
 def login():
      data = request.get_json()
-     Full_name = data.get('Full_name')
      email = data.get('email')
      password = data.get('password')
 
 
      Missing_fields = []
-     if not Full_name:
-          Missing_fields.append('Full_name')
      if not email:   
           Missing_fields.append('email')
      if not password:
@@ -58,11 +55,16 @@ def login():
           return jsonify({"Error": f"Missing_fields: {Missing_fields}"}), 400
      
      
-     # Query the admin user from database
+     # Query the admin user from database, to see if the credentials matches
      admin = Admin.query.filter_by(email=email).first()
 
-     if not admin or not check_password_hash(admin.password, password):
-        return jsonify({'message': 'Invalid credentials'}), 400
+     if not admin:
+        return jsonify({'message': 'Invalid email'}), 400
+     
+     if check_password_hash(admin.password, password):
+          pass
+     else:
+          return ({'message': 'Invalid password'}), 400
 
      
      

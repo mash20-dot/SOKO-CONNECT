@@ -54,9 +54,7 @@ def getproduct():
     product_uses = request.args.get('product_uses')
 
     
-    
     Missing_fields= []
-
     if not product_name:
             Missing_fields.append('product_name')
     if not product_price:
@@ -65,29 +63,21 @@ def getproduct():
             Missing_fields.append('product_uses')
 
 
-
     if Missing_fields:
         return jsonify({"Error": f"missing_fields: {Missing_fields}"}), 400
 
-    #not working yet have to fix it    
-    #if product in products:
-         #return jsonify({'message': 'product already uploaded'})
-    #product = products.query.filter_by(product_name=product_name).first()
-
-    if product:
-         return jsonify({'message': 'items retrieved successfully',
-                         'product_name':product_name,
-                         'product_price':product_price,
-                         'product_uses':product_uses
-                         
-    }), 200
     
      #Access the identity of thr logged in useer with get_jwt_identity
-    current_email = get_jwt_identity()
-    get_product = products.query.filter_by(email=current_email)
+    current_product = get_jwt_identity()
+    get_product = products.query.filter_by(product_name=current_product)
     if not get_product:
          return jsonify({'message': 'can not retrieve product'}), 403
-    return jsonify(looged_in_as=current_email), 200                                  
-
+                      
+    return jsonify({  'message': 'Data retrieved',
+                            'product_name': product_name,
+                            'product_price': product_price,
+                            'product_uses': product_uses
+                                 
+     }), 200
 
 
