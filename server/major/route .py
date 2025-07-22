@@ -1,11 +1,8 @@
 from flask import  Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token
-from flask_jwt_extended  import get_jwt_identity
-from flask_jwt_extended  import jwt_required
 from flask_jwt_extended import JWTManager
 from flask_jwt_extended  import set_access_cookies
-from flask_jwt_extended  import unset_jwt_cookies
-from flask_jwt_extended  import get_jwt
+from flask_jwt_extended  import get_jwt, get_jwt_identity, verify_jwt_in_request
 from werkzeug.security  import generate_password_hash, check_password_hash
 from datetime import datetime
 from datetime import timedelta
@@ -21,10 +18,22 @@ REFRESH_WINDOW_MINUTES = 60
 @major.after_request
 def refresh_expiring_jwts(response):
     try:
+        #verify if jwt is valid
+        verify_jwt_in_request(optional=True) 
+
+        #asking when the token is going to expire
         exp_timestamp = get_jwt()["exp"]
+        
+        #asking what time is it
         now = datetime.now(timezone.utc)
+        
+        #looking ahead 60 minutes from now
         target_timestamp = datetime.timestamp(now + timedelta(minutes=REFRESH_WINDOW_MINUTES))
+        
+        #asking if the key will espire in that 60 minutes
         if target_timestamp > exp_timestamp:
+            
+            #then set a new key and save in cookies
             access_token = create_access_token(identity=get_jwt_identity())
             set_access_cookies(response, access_token)
         return response
