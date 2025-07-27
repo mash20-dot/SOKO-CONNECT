@@ -9,7 +9,8 @@ from flask_jwt_extended import JWTManager
 from main.models import db
 from flask_sqlalchemy import SQLAlchemy
 import pymysql
-
+#traces an error if any error occur
+#import pdb; pdb.set_trace()
 
 #Importing blueprints
 from major.route import major
@@ -17,7 +18,6 @@ from logout.log import logout as logout_blueprint
 from buyerhistory.history import buyerhistory
 from item.items import item
 from add.min import add
-
 
 #Telling python to use pymysql as a replacement for MySQLdb
 pymysql.install_as_MySQLdb()

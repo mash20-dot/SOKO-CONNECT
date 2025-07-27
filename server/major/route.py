@@ -93,11 +93,19 @@ def login():
         email = data.get('email')
         password = data.get('password')
 
+        Missing_fields = []
+        if not email:
+            Missing_fields.append('email')
+        if not password:
+            Missing_fields.append('password')
+        if Missing_fields:
+            return jsonify({"Error": f"missing_fields: {Missing_fields}"}), 400
+
         #find user by email
         user = Buyer_user.query.filter_by(email=email).first()
 
         if not user:
-             return jsonify({'message': 'User not found'}), 400
+             return jsonify({'message': 'Invalid email'}), 400
 
         #hashes the entered password and comapare it to the hash password in the db
         if check_password_hash(user.password, password):
@@ -164,34 +172,41 @@ def business_user():
 #LOGIN form for business
 @major.route('/getbusiness', methods=['POST'])
 def getbusiness():
-     #get data from the database
-     data = request.get_json()
-     email = data.get('email')
-     password = data.get('password')
+    #get data from the database
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    Missing_fields = []
+    if not email:
+        Missing_fields.append('email')
+    if not password:
+        Missing_fields.append('password')
+    if Missing_fields:
+        return jsonify({"Error": f"missing_fields: {Missing_fields}"}), 400
 
 
-     #find user by email
-     business_user = Business_user.query.filter_by(email=email).first()
+    #find user by email
+    business_user = Business_user.query.filter_by(email=email).first()
      
      
      
-     if not business_user:
-          return jsonify({"message": "Invalid email"}), 404
+    if not business_user:
+        return jsonify({"message": "Invalid email"}), 404
      
-     #hashes the entered password and comapare it to the hash password in the db
-     if check_password_hash(business_user.password, password):
+    #hashes the entered password and comapare it to the hash password in the db
+    if check_password_hash(business_user.password, password):
         pass
-     else:
+    else:
         return jsonify({'message': 'Invalid password'}), 401
 
-     #create an access token for the user
-     #this access token is used to authenticate the user in subsequent requests
-     access_token = create_access_token(identity=email)
+    #create an access token for the user
+    #this access token is used to authenticate the user in subsequent requests
+    access_token = create_access_token(identity=email)
      
-     response = jsonify({
+    response = jsonify({
         "msg": "logged in successful",
           "access_token":access_token})
      
-     set_access_cookies(response, access_token)
-     return response
-     
+    set_access_cookies(response, access_token)
+    return response
