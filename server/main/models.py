@@ -27,6 +27,7 @@ class History(db.Model):
         buyer_name = db.Column(db.String(50))
         buyer_product = db.Column(db.String(50))
         date = db.Column(db.String(30))
+        email = db.Column(db.String(50))
 
 class products(db.Model):
         id = db.Column(db.Integer, primary_key=True)    

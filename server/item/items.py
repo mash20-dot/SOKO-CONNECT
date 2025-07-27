@@ -26,18 +26,15 @@ def product():
         if Missing_fields:
              return jsonify({"Error": f"Missing_fields: {Missing_fields}"}), 400
 
-        
+        # Accessing the identity of the current user with get_jwt_identity
+        current_email = get_jwt_identity()
        #saves products/items into the database
-        new_product = products(product_name=product_name, product_price=product_price, product_uses=product_uses)
+        new_product = products(
+            product_name=product_name, product_price=product_price, product_uses=product_uses, email=current_email)
         db.session.add(new_product)
         db.session.commit()
         
-        # Accessing the identity of the current user with get_jwt_identity
-        current_email = get_jwt_identity()
-        pro_duct = products.query.filter_by(email=current_email)
-        if not pro_duct:
-             return jsonify({'message': 'product could not be uploaded'}), 403
-        return jsonify(logged_in_as=current_email), 200
+        return jsonify({"message":"product saved successfully", "logged_in_as": current_email}), 200
 
 
         
@@ -67,12 +64,12 @@ def getproduct():
         return jsonify({"Error": f"missing_fields: {Missing_fields}"}), 400
 
     
-     #Access the identity of thr logged in useer with get_jwt_identity
-    current_product = get_jwt_identity()
-    get_product = products.query.filter_by(product_name=current_product)
-    if not get_product:
-         return jsonify({'message': 'can not retrieve product'}), 403
-                      
+     #Access the identity of the logged in useer with get_jwt_identity
+    current_email = get_jwt_identity()
+
+    if not current_email:
+          return jsonify({"message": "Access denied"}), 403                 
+    
     return jsonify({  'message': 'Data retrieved',
                             'product_name': product_name,
                             'product_price': product_price,

@@ -20,10 +20,8 @@ def message():
                              
                                                   
      current_email = get_jwt_identity()
-     mess_age = Message.query.filter_by(text=current_email).first()
-
-     if not mess_age:
-          return jsonify({'message': 'unable to send message'}), 403
+     if not current_email:
+          return jsonify({"message": "Access denied"}), 403
      return jsonify({'message': 'message sent successfully'}), 201
 
 

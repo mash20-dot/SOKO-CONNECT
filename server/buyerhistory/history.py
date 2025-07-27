@@ -20,25 +20,21 @@ def history():
         if not buyer_product:
              Missing_fields.append('buyer_product')
         if not date:
-             Missing_fields.append('data')
+             Missing_fields.append('date')
 
         if Missing_fields:
             return jsonify({"Error": f"missing_fields: {Missing_fields}"}), 400
-        
+         
+         
+         #getting user info for accessing this protected route using get_jwt_identity
+        current_email = get_jwt_identity()
+
          #saves user info in the database
-        new_user = History(buyer_name=buyer_name, buyer_product=buyer_product, date=date)
+        new_user = History(buyer_name=buyer_name, buyer_product=buyer_product, date=date, email=current_email)
         db.session.add(new_user)
         db.session.commit()
         
-        #getting user info for accessing this protected route using get_jwt_identity
-        current_email = get_jwt_identity()
-        history = History.query.filter_by(email=current_email).first()
-
-        
-        if not history:
-             return jsonify({'message': 'information could not be saved'}), 403
-        
-        return jsonify(logged_in_as=current_email), 200
+        return jsonify({"message": "saved successfully", "logged_in_as":current_email}), 200
 
        
 
@@ -68,9 +64,9 @@ def gethistory():
          
 
      current_email = get_jwt_identity()
-     business_his = History.query.filter_by(email=current_email).first()
 
-     if not business_his:
+
+     if not current_email:
           return jsonify({'message': 'Access denied'}), 403
      
      return jsonify({  'message': 'Data retrieved',
