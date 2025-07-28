@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, set_access_cookies, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
 from main.models import db, Admin
+#from flask_rbac import RBAC
 
 add = Blueprint('/add', __name__)
 
@@ -90,5 +91,50 @@ def dashboard():
      if not admin:
           return jsonify({'message': 'Access denied'}), 403
      return jsonify(logged_in_as=current_email), 200
+
+@add.route('/upgrade', methods=['PUT'])
+@jwt_required()
+def upgrade():
+
+     current_email = get_jwt_identity()
+     get_email = Admin.query.filter_by(email=current_email).first()
+
+     if not get_email:
+          return jsonify({"message": "user could not be found"}), 404
+     
+     data = request.get_json()
+     new_email = data.get('new_email')
+
+     if not new_email:
+          return jsonify({'message': "New email required"}), 400
+
+     get_email.email = new_email
+     db.session.commit()
+     return jsonify({'message': 'Email has been updated successfully'}), 200
+
+
+@add.route('/up_password', methods=['PUT'])
+@jwt_required()
+def up_password():
+
+     current_email = get_jwt_identity()
+     update_password = Admin.query.filter_by(email=current_email).first()
+
+     if not update_password:
+          return jsonify({'message': 'password could not be found'}), 400
+
+     data = request.get_json()
+     old_password = data.get('old_password')
+     new_password = data.get('new_password')
+
+     if not old_password or not new_password:
+          return jsonify({'message': 'Both old_password and new_password must be provided'}), 400
+     
+     if not check_password_hash(update_password.password, old_password):
+          return jsonify({'message': 'old_password is incorrect'}), 400
+     
+     update_password.password = generate_password_hash(new_password)
+     db.session.commit()
+     return jsonify({'message': 'password updated successfully'}), 200
 
      
