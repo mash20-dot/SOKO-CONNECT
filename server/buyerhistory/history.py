@@ -44,7 +44,6 @@ def history():
 def gethistory():
      
      data = request.get_json()
-     buyer_name = data.get('buyer_name')
      buyer_product = data.get('buyer_product')
      date = data.get('date')
      
