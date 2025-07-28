@@ -229,7 +229,7 @@ def difference():
     if not new_email:
         return jsonify({"message": "New email required"})
     
-    new_info.email = 'new_email'
+    new_info.email = new_email
     db.session.commit()
     return jsonify({"message": "Email updated successfully"}), 200
 
@@ -242,7 +242,7 @@ def up_date():
     current_email = get_jwt_identity()
     change_password = Buyer_user.query.filter_by(email=current_email).first()
 
-    if not change_password():
+    if not change_password:
         return jsonify({"message": "user not found"}), 404
     
 
@@ -257,7 +257,7 @@ def up_date():
     if not check_password_hash(change_password.password, old_password):
         return jsonify({"message": "Old password is incorrect"}), 401
     
-    user_password = generate_password_hash(new_password)
+    change_password.password = generate_password_hash(new_password)
     db.session.commit()
     return jsonify({"message": "password updated successfully"}), 200
 
@@ -280,7 +280,7 @@ def business_update():
     if not new_email:
         return jsonify({"message": "New email required"})
     
-    new_info.email = 'new_email'
+    new_info.email = new_email
     db.session.commit()
     return jsonify({"message": "Email updated successfully"}), 200
 
@@ -293,7 +293,7 @@ def bus_password():
     current_email = get_jwt_identity()
     change_password = Business_user.query.filter_by(email=current_email).first()
 
-    if not change_password():
+    if not change_password:
         return jsonify({"message": "user not found"}), 404
     
 
@@ -308,7 +308,7 @@ def bus_password():
     if not check_password_hash(change_password.password, old_password):
         return jsonify({"message": "Old password is incorrect"}), 401
     
-    user_password = generate_password_hash(new_password)
+    change_password.password = generate_password_hash(new_password)
     db.session.commit()
     return jsonify({"message": "password updated successfully"}), 200
 
