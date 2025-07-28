@@ -1,7 +1,7 @@
 from flask import  Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import JWTManager
-from flask_jwt_extended  import set_access_cookies
+from flask_jwt_extended  import set_access_cookies, jwt_required
 from flask_jwt_extended  import get_jwt, get_jwt_identity, verify_jwt_in_request
 from werkzeug.security  import generate_password_hash, check_password_hash
 from datetime import datetime
@@ -210,3 +210,106 @@ def getbusiness():
      
     set_access_cookies(response, access_token)
     return response
+
+
+#UPDATING BUYERS EMAIL
+@major.route('/difference', methods=['PUT'])
+@jwt_required()
+def difference():
+
+    current_email = get_jwt_identity()
+    new_info = Buyer_user.query.filter_by(email=current_email).first()
+
+    if not new_info:
+        return jsonify({"message": "user not found"}), 404
+    
+    data = request.get_json()
+    new_email = data.get("new_email")
+
+    if not new_email:
+        return jsonify({"message": "New email required"})
+    
+    new_info.email = 'new_email'
+    db.session.commit()
+    return jsonify({"message": "Email updated successfully"}), 200
+
+
+#UPDATING BUYERS PASSWORD
+@major.route('/password_update', methods=['PUT'])
+@jwt_required()
+def up_date():
+
+    current_email = get_jwt_identity()
+    change_password = Buyer_user.query.filter_by(email=current_email).first()
+
+    if not change_password():
+        return jsonify({"message": "user not found"}), 404
+    
+
+    data = request.get_json()
+    old_password = data.get('old_password')
+    new_password = data.get('new_password')
+
+
+    if not old_password or not new_password:
+        return jsonify({"message": "Both old and new password are required"}), 400
+
+    if not check_password_hash(change_password.password, old_password):
+        return jsonify({"message": "Old password is incorrect"}), 401
+    
+    user_password = generate_password_hash(new_password)
+    db.session.commit()
+    return jsonify({"message": "password updated successfully"}), 200
+
+
+
+#UPDATING BUSINESS OWNERS EMAIL
+@major.route('/business_update', methods=['PUT'])
+@jwt_required()
+def business_update():
+
+    current_email = get_jwt_identity()
+    new_info = Business_user.query.filter_by(email=current_email).first()
+
+    if not new_info:
+        return jsonify({"message": "user not found"}), 404
+    
+    data = request.get_json()
+    new_email = data.get("new_email")
+
+    if not new_email:
+        return jsonify({"message": "New email required"})
+    
+    new_info.email = 'new_email'
+    db.session.commit()
+    return jsonify({"message": "Email updated successfully"}), 200
+
+
+#UPDATING BUSINESS OWNERS PASSWORD
+@major.route('/business_password', methods=['PUT'])
+@jwt_required()
+def bus_password():
+
+    current_email = get_jwt_identity()
+    change_password = Business_user.query.filter_by(email=current_email).first()
+
+    if not change_password():
+        return jsonify({"message": "user not found"}), 404
+    
+
+    data = request.get_json()
+    old_password = data.get('old_password')
+    new_password = data.get('new_password')
+
+
+    if not old_password or not new_password:
+        return jsonify({"message": "Both old and new password are required"}), 400
+
+    if not check_password_hash(change_password.password, old_password):
+        return jsonify({"message": "Old password is incorrect"}), 401
+    
+    user_password = generate_password_hash(new_password)
+    db.session.commit()
+    return jsonify({"message": "password updated successfully"}), 200
+
+
