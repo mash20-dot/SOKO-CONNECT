@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended  import get_jwt_identity
 from main.models import db, History
-
+#FOR BUYER TO FILL WHEN CONTACTING OR PURCHASING SOMETHING ON THE PLATFORM
 buyerhistory = Blueprint('buyerhistory', __name__)
 
 @buyerhistory.route('/history', methods=['POST'])
@@ -34,16 +34,16 @@ def history():
         db.session.add(new_user)
         db.session.commit()
         
-        return jsonify({"message": "purchase information successfully", "logged_in_as":current_email}), 200
+        return jsonify({"message": "purchase information saved successfully", "logged_in_as":current_email}), 200
 
        
 
-
+#FOR BUSINESS OWNERS TO RETRIEVE IN CASE THEY WANT TO SEE HOW MANY ITEMS WAS PURCHASE ON A SPECIFIC DATE
 @buyerhistory.route('/gethistory', methods=['GET'])
 @jwt_required()
 def gethistory():
      
-     data = request.args
+     data = request.get_json()
      buyer_name = data.get('buyer_name')
      buyer_product = data.get('buyer_product')
      date = data.get('date')
@@ -51,8 +51,6 @@ def gethistory():
 
      #stores a blank field and if not field throws an error
      Missing_fields = []
-     if not buyer_name:
-          Missing_fields.append('buyer_name')
      if not buyer_product:
           Missing_fields.append('buyer_product')
      if not date:
@@ -65,21 +63,28 @@ def gethistory():
 
      current_email = get_jwt_identity()
 
-     history_data = History.query.filter_by(email=current_email).all()
+     history_data = History.query.filter_by(buyer_product=buyer_product).all()
 
 
-     if not current_email:
-          return jsonify({'message': 'History not found'}), 403
+     if not history_data:
+          return jsonify({'message': 'No purchase was made for this product'}), 403
      
-      # Convert data to JSON-serializable format
+
+     
+     # Check if any record matches the requested date
+     matching_records = [record for record in history_data if str(record.date) == date]
+
+     if not matching_records:
+          return jsonify({"message": "No purchase was made on this date"}), 403
+     
+     
+     # Convert data to JSON-serializable format
      result = []
      for record in history_data:
         result.append({
             "buyer_name": record.buyer_name,
             "buyer_product": record.buyer_product,
-            "date": record.date.strftime("%Y-%m-%d"),#convert date to string if it's a date object
+            "date": record.date,
         })
 
      return jsonify(result), 200
-
-#TEST THIS
