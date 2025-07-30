@@ -125,8 +125,6 @@ def login():
         return response
      
 
-
-#This route is working perfectly do not touch it
 #Signup form for businesses
 @major.route('/business', methods=['POST'])
 def business_user():
@@ -330,10 +328,13 @@ def delete_user():
     if not remove_email or not remove_password:
         return jsonify({"message": "Both email and password required to delete accound"}), 400
     
+    if not check_password_hash(delete_email.password, remove_password):
+        return jsonify({"message": "Invalid password"}), 400
+    
     delete_email.email = remove_email
     db.session.delete(delete_email)
     db.session.commit()
-    return jsonify({"message": f"user {remove_email} deleted successfully"}), 201
+    return jsonify({"message": f"user {delete_email} deleted successfully"}), 201
 
 
 @major.route('/delete_business', methods=['DELETE'])
@@ -351,12 +352,15 @@ def delete_business():
     remove_password = data.get("remove_password")
 
     #TEST FOR THIS BLOCK OF CODE
-    if not remove_email or not remove_password:
-        return jsonify({"message": "Both email and password are required"}), 400
+    if not remove_email:
+        return jsonify({"message": "email is required"}), 400
+    
+    if not check_password_hash(delete_email.password, remove_password):
+        return jsonify({"message": "Invalid password"})
     
     delete_email.email = remove_email
     db.session.delete(delete_email)
     db.session.commit()
-    return jsonify({"message": f"user {remove_email} has been deleted successfully"}), 201
+    return jsonify({"message": f"user {delete_email} has been deleted successfully"}), 201
 
 

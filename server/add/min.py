@@ -138,4 +138,29 @@ def up_password():
      return jsonify({'message': 'password updated successfully'}), 200
 
      
-     #IMPLEMENT ROLL BASED ACCESS CONTROL
+
+@add.route('/delete_Admin', methods=['DELETE'])
+@jwt_required()
+def delete_Admin():
+
+     current_email = get_jwt_identity()
+     delete_email = Admin.query.filter_by(email=current_email).first()
+
+     if not delete_email:
+          return jsonify({"message": "user not found"}), 401
+     
+     data = request.get_json()
+     remove_email = data.get("remove_email")
+     remove_password = data.get("remove_password")
+
+     if not remove_email:
+          return jsonify({"message": "missing email"}), 400
+     
+     if not check_password_hash(delete_email.password, remove_password):
+          return jsonify({"message": "Invalid password"}), 400
+     
+     delete_email.email = remove_email
+     db.session.delete(delete_email)
+     db.session.commit()
+     return jsonify({"message": f"Admin {delete_email} delete successfully"}), 201
+     
