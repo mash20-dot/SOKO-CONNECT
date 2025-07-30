@@ -313,3 +313,50 @@ def bus_password():
     return jsonify({"message": "password updated successfully"}), 200
 
 
+@major.route('/delete_user', methods=['DELETE'])
+@jwt_required()
+def delete_user():
+
+    current_email = get_jwt_identity()
+    delete_email = Buyer_user.query.filter_by(email=current_email).first()
+
+    if not delete_email:
+        return jsonify({"message": "user not found"}), 400
+    
+    data = request.get_json()
+    remove_email = data.get("remove_email")
+    remove_password = data.get("remove_password")
+
+    if not remove_email or not remove_password:
+        return jsonify({"message": "Both email and password required to delete accound"}), 400
+    
+    delete_email.email = remove_email
+    db.session.delete(delete_email)
+    db.session.commit()
+    return jsonify({"message": f"user {remove_email} deleted successfully"}), 201
+
+
+@major.route('/delete_business', methods=['DELETE'])
+@jwt_required()
+def delete_business():
+
+    current_email = get_jwt_identity()
+    delete_email = Business_user.query.filter_by(email=current_email).first()
+
+    if not delete_email:
+        return jsonify({"message": "user not found"}), 400
+    
+    data = request.get_json()
+    remove_email = data.get("remove_email")
+    remove_password = data.get("remove_password")
+
+    #TEST FOR THIS BLOCK OF CODE
+    if not remove_email or not remove_password:
+        return jsonify({"message": "Both email and password are required"}), 400
+    
+    delete_email.email = remove_email
+    db.session.delete(delete_email)
+    db.session.commit()
+    return jsonify({"message": f"user {remove_email} has been deleted successfully"}), 201
+
+
