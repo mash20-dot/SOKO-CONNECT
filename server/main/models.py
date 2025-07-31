@@ -24,6 +24,8 @@ class Business_user(db.Model):
     password = db.Column(db.String(300), nullable=False)
     role = db.Column(db.String(20), default="business_owner", nullable=False)
     create_at = db.Column(db.DateTime, default=datetime.utcnow)
+    products = db.relationship('products', backref='owner', lazy=True)
+
 
 
 #db model for buyer purchase history
@@ -38,7 +40,8 @@ class products(db.Model):
         product_name = db.Column(db.String(50))
         product_price = db.Column(db.String(50))
         product_uses = db.Column(db.String(1000))
-
+        create_at = db.Column(db.DateTime, default=datetime.utcnow)
+        business_user_id = db.Column(db.Integer, db.ForeignKey('business_user.id'), nullable=False)
 
 class Message(db.Model):
         id = db.Column(db.Integer, primary_key=True)    

@@ -1,11 +1,13 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from main.models import db, products
+from main.models import db, products, Business_user
+from major.decorator import role_required
 
 item = Blueprint('item', __name__)
 #FOR BUSINESSES TO POST THEIR PRODUCT
 @item.route('/product', methods=['POST'])
 @jwt_required()
+@role_required("business_owner")
 def product():
         data = request.get_json()
         product_name = data.get('product_name')
@@ -21,16 +23,18 @@ def product():
         if not product_uses:
             Missing_fields.append('product_uses')
     
-            
-
         if Missing_fields:
              return jsonify({"Error": f"Missing_fields: {Missing_fields}"}), 400
-
-        # Accessing the identity of the current user with get_jwt_identity
+          # Accessing the identity of the current user with get_jwt_identity
+        
         current_email = get_jwt_identity()
+        business = Business_user.query.filter_by(email=current_email).first()
+
+
+      
        #saves products/items into the database
         new_product = products(
-            product_name=product_name, product_price=product_price, product_uses=product_uses)
+            product_name=product_name, product_price=product_price, product_uses=product_uses, business_id=business.id )
         db.session.add(new_product)
         db.session.commit()
         
@@ -77,5 +81,5 @@ def getproduct():
 
     return jsonify(result), 200
 
-#TRY TO JOIN THE BUSINESS TABLE TO THE PRODUCTS TABLE FOT BUSINESS OWNER TO POST INTO THE PRODUCTS TABLE
+#TRY TO FIX THIS USER NOT FOUND
 
