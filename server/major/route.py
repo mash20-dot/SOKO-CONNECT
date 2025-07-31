@@ -8,6 +8,7 @@ from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
 from main.models import db, Buyer_user, Business_user
+from major.decorator import role_required
 
 major = Blueprint('major', __name__)
 

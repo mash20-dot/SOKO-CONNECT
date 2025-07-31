@@ -1,24 +1,29 @@
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 db = SQLAlchemy()
 
 #db model for buyer authentication
 class Buyer_user(db.Model):
     id = db.Column(db.Integer, primary_key=True)    
-    firstname = db.Column(db.String(50))
-    lastname = db.Column(db.String(50))
-    email = db.Column(db.String(150), unique=True,)
-    password = db.Column(db.String(300),)
+    firstname = db.Column(db.String(50), nullable=False)
+    lastname = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(300), nullable=False)
+    role = db.Column(db.String(20), default="user", nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     
 
 #db model for business authentication
 class Business_user(db.Model):
     id = db.Column(db.Integer, primary_key=True)    
-    business_name = db.Column(db.String(50))
-    email = db.Column(db.String(150), unique=True,)
-    phone = db.Column(db.String(150),)
-    password = db.Column(db.String(300),)
+    business_name = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(150), unique=True, nullable=False)
+    phone = db.Column(db.String(150), nullable=False)
+    password = db.Column(db.String(300), nullable=False)
+    role = db.Column(db.String(20), default="business_owner", nullable=False)
+    create_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 #db model for buyer purchase history
@@ -40,9 +45,4 @@ class Message(db.Model):
         text = db.Column(db.String(1000))
 
 
-
-class Admin(db.Model):
-    id = db.Column(db.Integer, primary_key=True)    
-    Full_name = db.Column(db.String(50))
-    email = db.Column(db.String(150), unique=True,)
-    password = db.Column(db.String(300),)
+#DEVELOP AN ORDER TABLE

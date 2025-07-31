@@ -9,8 +9,6 @@ from flask_jwt_extended import JWTManager
 from main.models import db
 from flask_sqlalchemy import SQLAlchemy
 import pymysql
-#traces an error if any error occur
-#import pdb; pdb.set_trace()
 
 #Importing blueprints
 from major.route import major
@@ -48,6 +46,7 @@ app.register_blueprint(add, url_prefix='/add')
 # Create all tables
 with app.app_context():
     db.create_all()
+
 
 if __name__ == '__main__':
     app.run(debug=True)

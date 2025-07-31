@@ -2,11 +2,14 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended  import get_jwt_identity
 from main.models import db, History
-#FOR BUYER TO FILL WHEN CONTACTING OR PURCHASING SOMETHING ON THE PLATFORM
+from major.decorator import role_required
+
 buyerhistory = Blueprint('buyerhistory', __name__)
 
+#FOR BUYER TO FILL WHEN CONTACTING OR PURCHASING SOMETHING ON THE PLATFORM
 @buyerhistory.route('/history', methods=['POST'])
 @jwt_required()
+@role_required("user, admin")  #TEST THIS 
 def history():
         data = request.get_json()
         buyer_name = data.get('buyer_name')
@@ -89,5 +92,5 @@ def gethistory():
      return jsonify(result), 200
 
 
-
+#TRY TO JOIN THE BUSINESS USER TABLE TO THE HISTORY TABLE FOR BUSINESS OWNER TO GET ACCESS TO THE HISTORY TABLE
 
