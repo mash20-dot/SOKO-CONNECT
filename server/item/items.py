@@ -34,7 +34,7 @@ def product():
       
        #saves products/items into the database
         new_product = products(
-            product_name=product_name, product_price=product_price, product_uses=product_uses, business_id=business.id )
+            product_name=product_name, product_price=product_price, product_uses=product_uses, business_user_id=business.id )
         db.session.add(new_product)
         db.session.commit()
         
@@ -82,4 +82,9 @@ def getproduct():
     return jsonify(result), 200
 
 #TRY TO FIX THIS USER NOT FOUND
+
+     
+     
+
+
 

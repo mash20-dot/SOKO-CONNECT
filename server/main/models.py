@@ -12,6 +12,7 @@ class Buyer_user(db.Model):
     password = db.Column(db.String(300), nullable=False)
     role = db.Column(db.String(20), default="user", nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    History = db.relationship('History', backref='user', lazy=True)
 
     
 
@@ -34,6 +35,7 @@ class History(db.Model):
         buyer_name = db.Column(db.String(50))
         buyer_product = db.Column(db.String(50))
         date = db.Column(db.String(30))
+        buyer_user_id = db.Column(db.Integer, db.ForeignKey('buyer_user.id'), nullable=False)
 
 class products(db.Model):
         id = db.Column(db.Integer, primary_key=True)    
