@@ -14,7 +14,17 @@ class Buyer_user(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     History = db.relationship('History', backref='user', lazy=True)
 
-    
+#db model for buyer purchase history
+class History(db.Model):
+        id = db.Column(db.Integer, primary_key=True)    
+        buyer_name = db.Column(db.String(50))
+        buyer_product = db.Column(db.String(50))
+        date = db.Column(db.String(30))
+        buyer_user_id = db.Column(db.Integer, db.ForeignKey('buyer_user.id'), nullable=False)
+
+
+
+
 
 #db model for business authentication
 class Business_user(db.Model):
@@ -27,16 +37,6 @@ class Business_user(db.Model):
     create_at = db.Column(db.DateTime, default=datetime.utcnow)
     products = db.relationship('products', backref='owner', lazy=True)
 
-
-
-#db model for buyer purchase history
-class History(db.Model):
-        id = db.Column(db.Integer, primary_key=True)    
-        buyer_name = db.Column(db.String(50))
-        buyer_product = db.Column(db.String(50))
-        date = db.Column(db.String(30))
-        buyer_user_id = db.Column(db.Integer, db.ForeignKey('buyer_user.id'), nullable=False)
-
 class products(db.Model):
         id = db.Column(db.Integer, primary_key=True)    
         product_name = db.Column(db.String(50))
@@ -44,6 +44,10 @@ class products(db.Model):
         product_uses = db.Column(db.String(1000))
         create_at = db.Column(db.DateTime, default=datetime.utcnow)
         business_user_id = db.Column(db.Integer, db.ForeignKey('business_user.id'), nullable=False)
+
+
+
+
 
 class Message(db.Model):
         id = db.Column(db.Integer, primary_key=True)    

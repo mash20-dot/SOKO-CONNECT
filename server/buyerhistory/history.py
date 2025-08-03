@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended  import get_jwt_identity
-from main.models import db, History
+from main.models import db, History, Buyer_user
 from major.decorator import role_required
 
 buyerhistory = Blueprint('buyerhistory', __name__)
@@ -9,7 +9,7 @@ buyerhistory = Blueprint('buyerhistory', __name__)
 #FOR BUYER TO FILL WHEN CONTACTING OR PURCHASING SOMETHING ON THE PLATFORM
 @buyerhistory.route('/history', methods=['POST'])
 @jwt_required()
-@role_required("user, admin")  #TEST THIS 
+@role_required("user") 
 def history():
         data = request.get_json()
         buyer_name = data.get('buyer_name')
@@ -31,9 +31,11 @@ def history():
          
          #getting user info for accessing this protected route using get_jwt_identity
         current_email = get_jwt_identity()
+        buyer = Buyer_user.query.filter_by(email=current_email).first()
 
          #saves user info in the database
-        new_user = History(buyer_name=buyer_name, buyer_product=buyer_product, date=date)
+        new_user = History(
+             buyer_name=buyer_name, buyer_product=buyer_product, date=date, buyer_user_id=buyer.id)
         db.session.add(new_user)
         db.session.commit()
         
@@ -44,6 +46,7 @@ def history():
 #FOR BUSINESS OWNERS TO RETRIEVE IN CASE THEY WANT TO SEE HOW MANY ITEMS WAS PURCHASE ON A SPECIFIC DATE
 @buyerhistory.route('/gethistory', methods=['GET'])
 @jwt_required()
+@role_required("user")
 def gethistory():
      
      data = request.get_json()
@@ -71,8 +74,6 @@ def gethistory():
      if not history_data:
           return jsonify({'message': 'No purchase was made for this product'}), 403
      
-
-     
      # Check if any record matches the requested date
      matching_records = [record for record in history_data if str(record.date) == date]
 
@@ -92,5 +93,4 @@ def gethistory():
      return jsonify(result), 200
 
 
-#TRY TO JOIN THE BUSINESS USER TABLE TO THE HISTORY TABLE FOR BUSINESS OWNER TO GET ACCESS TO THE HISTORY TABLE
-
+#TRY TO IMPLEMENT TO ALLOW USER TO RETRIEVE A HISTORY ON A SPECIFIC DATE AND TEST ALL THE ROUTES IN THIS SYSTEM

@@ -9,6 +9,7 @@ from datetime import timedelta
 from datetime import timezone
 from main.models import db, Buyer_user, Business_user
 from major.decorator import role_required
+from major.decorate import role_required
 
 major = Blueprint('major', __name__)
 
@@ -214,6 +215,7 @@ def getbusiness():
 #UPDATING BUYERS EMAIL
 @major.route('/difference', methods=['PUT'])
 @jwt_required()
+@role_required("user")
 def difference():
 
     current_email = get_jwt_identity()
@@ -236,6 +238,7 @@ def difference():
 #UPDATING BUYERS PASSWORD
 @major.route('/password_update', methods=['PUT'])
 @jwt_required()
+@role_required("user")
 def up_date():
 
     current_email = get_jwt_identity()
@@ -262,9 +265,39 @@ def up_date():
 
 
 
+
+@major.route('/delete_user', methods=['DELETE'])
+@jwt_required()
+@role_required("user")
+def delete_user():
+
+    current_email = get_jwt_identity()
+    delete_email = Buyer_user.query.filter_by(email=current_email).first()
+
+    if not delete_email:
+        return jsonify({"message": "user not found"}), 400
+    
+    data = request.get_json()
+    remove_email = data.get("remove_email")
+    remove_password = data.get("remove_password")
+
+    if not remove_email or not remove_password:
+        return jsonify({"message": "Both email and password required to delete accound"}), 400
+    
+    if not check_password_hash(delete_email.password, remove_password):
+        return jsonify({"message": "Invalid password"}), 400
+    
+    delete_email.email = remove_email
+    db.session.delete(delete_email)
+    db.session.commit()
+    return jsonify({"message": f"user {delete_email} deleted successfully"}), 201
+
+
+
 #UPDATING BUSINESS OWNERS EMAIL
 @major.route('/business_update', methods=['PUT'])
 @jwt_required()
+@role_required("business_owner")
 def business_update():
 
     current_email = get_jwt_identity()
@@ -284,9 +317,11 @@ def business_update():
     return jsonify({"message": "Email updated successfully"}), 200
 
 
+
 #UPDATING BUSINESS OWNERS PASSWORD
 @major.route('/business_password', methods=['PUT'])
 @jwt_required()
+@role_required("business_owner")
 def bus_password():
 
     current_email = get_jwt_identity()
@@ -312,34 +347,11 @@ def bus_password():
     return jsonify({"message": "password updated successfully"}), 200
 
 
-@major.route('/delete_user', methods=['DELETE'])
-@jwt_required()
-def delete_user():
-
-    current_email = get_jwt_identity()
-    delete_email = Buyer_user.query.filter_by(email=current_email).first()
-
-    if not delete_email:
-        return jsonify({"message": "user not found"}), 400
-    
-    data = request.get_json()
-    remove_email = data.get("remove_email")
-    remove_password = data.get("remove_password")
-
-    if not remove_email or not remove_password:
-        return jsonify({"message": "Both email and password required to delete accound"}), 400
-    
-    if not check_password_hash(delete_email.password, remove_password):
-        return jsonify({"message": "Invalid password"}), 400
-    
-    delete_email.email = remove_email
-    db.session.delete(delete_email)
-    db.session.commit()
-    return jsonify({"message": f"user {delete_email} deleted successfully"}), 201
 
 
 @major.route('/delete_business', methods=['DELETE'])
 @jwt_required()
+@role_required("business_owner")
 def delete_business():
 
     current_email = get_jwt_identity()
@@ -365,3 +377,5 @@ def delete_business():
     return jsonify({"message": f"user {delete_email} has been deleted successfully"}), 201
 
 
+
+#TEST THESE PROTECTED ROUTES AGAIN

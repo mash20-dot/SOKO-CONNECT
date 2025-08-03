@@ -37,15 +37,16 @@ def product():
               business_user_id=business.id)
         db.session.add(new_product)
         db.session.commit()
-        
+         
         return jsonify({"message":"product saved successfully", "logged_in_as": current_email}), 200
 
-        
+        #GET PRODUCTS FROM PRODUCT0
         
         
 #ROUTE FOR GETTING ITEMS FROM THE DATABASE
 @item.route('/getproduct', methods=['GET'])
 @jwt_required()
+@role_required("business_owner")
 def getproduct():
      
     data = request.get_json()
