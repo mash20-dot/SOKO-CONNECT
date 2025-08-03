@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from main.models import db, products, Business_user
-from major.decorator import role_required
+from major.decorate import role_required
 
 item = Blueprint('item', __name__)
 #FOR BUSINESSES TO POST THEIR PRODUCT
@@ -28,18 +28,21 @@ def product():
           # Accessing the identity of the current user with get_jwt_identity
         
         current_email = get_jwt_identity()
-        business = Business_user.query.filter_by(email=current_email).first()
+        #business = products.query.filter_by(email=current_email).first()
 
+        #if not business:
+             #return jsonify({"message": "user not found"}), 400
 
       
        #saves products/items into the database
         new_product = products(
-            product_name=product_name, product_price=product_price, product_uses=product_uses, business_user_id=business.id )
+            product_name=product_name, product_price=product_price, product_uses=product_uses,
+              business_user_id=business_id )
         db.session.add(new_product)
         db.session.commit()
         
         return jsonify({"message":"product saved successfully", "logged_in_as": current_email}), 200
-
+#HERE IS THE PROBLEM SOLVE IT
 
         
         

@@ -1,7 +1,7 @@
 from functools import wraps
 from flask import jsonify
 from flask_jwt_extended import get_jwt_identity
-from main.models import Buyer_user 
+from main.models import Business_user
 
 def role_required(*allowed_roles):
     #the route being protected
@@ -10,7 +10,7 @@ def role_required(*allowed_roles):
         @wraps(fn)
         #accepting any kind of input in the decorated function
         def decorated(*args, **kwargs):
-            user = Buyer_user.query.filter_by(email=get_jwt_identity()).first()
+            user = Business_user.query.filter_by(email=get_jwt_identity()).first()
 
             if not user:
                 return jsonify({"message": "User not found"}), 404
