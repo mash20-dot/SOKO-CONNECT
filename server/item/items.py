@@ -28,21 +28,17 @@ def product():
           # Accessing the identity of the current user with get_jwt_identity
         
         current_email = get_jwt_identity()
-        #business = products.query.filter_by(email=current_email).first()
-
-        #if not business:
-             #return jsonify({"message": "user not found"}), 400
+        business = Business_user.query.filter_by(email=current_email).first()
 
       
        #saves products/items into the database
         new_product = products(
             product_name=product_name, product_price=product_price, product_uses=product_uses,
-              business_user_id=business_id )
+              business_user_id=business.id)
         db.session.add(new_product)
         db.session.commit()
         
         return jsonify({"message":"product saved successfully", "logged_in_as": current_email}), 200
-#HERE IS THE PROBLEM SOLVE IT
 
         
         
