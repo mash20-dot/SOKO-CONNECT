@@ -16,6 +16,7 @@ from logout.log import logout as logout_blueprint
 from buyerhistory.history import buyerhistory
 from item.items import item
 from add.min import add
+from money.job import money
 
 #Telling python to use pymysql as a replacement for MySQLdb
 pymysql.install_as_MySQLdb()
@@ -42,6 +43,7 @@ app.register_blueprint(logout_blueprint, url_prefix='/logout')
 app.register_blueprint(buyerhistory, url_prefix='/buyerhistory')
 app.register_blueprint(item, url_prefix='/item')
 app.register_blueprint(add, url_prefix='/add')
+app.register_blueprint(money, url_prefix='/money')
 
 # Create all tables
 with app.app_context():
