@@ -213,7 +213,3 @@ def delete_business():
     db.session.delete(delete_email)
     db.session.commit()
     return jsonify({"message": f"user {delete_email} has been deleted successfully"}), 201
-
-
-
-#TEST THESE PROTECTED ROUTES AGAIN
