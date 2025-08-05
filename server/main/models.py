@@ -13,15 +13,15 @@ class Buyer_user(db.Model):
     role = db.Column(db.String(20), default="user", nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     Orders = db.relationship('Orders', backref='user', lazy=True)
-
+    
+    
 class Orders(db.Model): 
-      id = db.Column(db.Integer, primary_key=True)
-      product = db.Column(db.String(150), nullable=False)
-      order_status = db.Column(db.String(150), nullable=False)
-      payment = db.Column(db.String(150), nullable=False)
-      ordered_at = db.Column(db.DateTime, default=datetime.utcnow)
-      buyer_user_id = db.Column(db.Integer, db.ForeignKey('buyer_user_id'), nullable=False)
-
+    id = db.Column(db.Integer, primary_key=True)
+    product = db.Column(db.String(150), nullable=False)
+    order_status = db.Column(db.String(150), nullable=False)
+    payment = db.Column(db.String(150), nullable=False)
+    ordered_at = db.Column(db.DateTime, default=datetime.utcnow)
+    buyer_user_id = db.Column(db.Integer, db.ForeignKey('buyer_user_id.buyer_user'), nullable=False)
 
 #db model for business authentication
 class Business_user(db.Model):
