@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended  import get_jwt_identity
-from main.models import db, History, Buyer_user
+from main.models import db, Orders
 from major.decorator import role_required
 
 buyerhistory = Blueprint('buyerhistory', __name__)
@@ -11,86 +11,37 @@ buyerhistory = Blueprint('buyerhistory', __name__)
 @jwt_required()
 @role_required("user") 
 def history():
-        data = request.get_json()
-        buyer_name = data.get('buyer_name')
-        buyer_product = data.get('buyer_product')
-        date = data.get('date')
+          data = request.get_json()
+          product = data.get('product')
 
         #stores a blank field and if not field throws an error
-        Missing_fields = []
-        if not buyer_name:
-             Missing_fields.append('buyer_name')
-        if not buyer_product:
-             Missing_fields.append('buyer_product')
-        if not date:
-             Missing_fields.append('date')
+          Missing_fields = []
+          if not product:
+             Missing_fields.append('my_orders')
 
-        if Missing_fields:
+          if Missing_fields:
             return jsonify({"Error": f"missing_fields: {Missing_fields}"}), 400
          
          
          #getting user info for accessing this protected route using get_jwt_identity
-        current_email = get_jwt_identity()
-        buyer = Buyer_user.query.filter_by(email=current_email).first()
+          current_email = get_jwt_identity()
+          if current_email:
+               pass
+          else:
+               return jsonify({"messagge": "user not found"}), 400
+          
+          buyer = Orders.query.filter_by(product=product).first()
 
-         #saves user info in the database
-        new_user = History(
-             buyer_name=buyer_name, buyer_product=buyer_product, date=date, buyer_user_id=buyer.id)
-        db.session.add(new_user)
-        db.session.commit()
-        
-        return jsonify({"message": "purchase information saved successfully", "logged_in_as":current_email}), 200
+          if not buyer:
+               return jsonify({"message": "no order found"}), 400
 
-       
+           # Convert data to JSON-serializable format
+          result = []
+          for record in buyer:
+               result.append({
+            "product": record.buyer_name,
+            "order_status": record.buyer_product,
+            "status": record.date,
+          })
 
-#FOR BUSINESS OWNERS TO RETRIEVE IN CASE THEY WANT TO SEE HOW MANY ITEMS WAS PURCHASE ON A SPECIFIC DATE
-@buyerhistory.route('/gethistory', methods=['GET'])
-@jwt_required()
-@role_required("user")
-def gethistory():
-     
-     data = request.get_json()
-     buyer_product = data.get('buyer_product')
-     date = data.get('date')
-     
-
-     #stores a blank field and if not field throws an error
-     Missing_fields = []
-     if not buyer_product:
-          Missing_fields.append('buyer_product')
-     if not date:
-          Missing_fields.append('date')
-
-     if Missing_fields:
-          return jsonify({"Error": f"missing_fields: {Missing_fields}"}), 400
-     
-         
-
-     current_email = get_jwt_identity()
-
-     history_data = History.query.filter_by(buyer_product=buyer_product).all()
-
-
-     if not history_data:
-          return jsonify({'message': 'No purchase was made for this product'}), 403
-     
-     # Check if any record matches the requested date
-     matching_records = [record for record in history_data if str(record.date) == date]
-
-     if not matching_records:
-          return jsonify({"message": "No purchase was made on this date"}), 403
-     
-     
-     # Convert data to JSON-serializable format
-     result = []
-     for record in history_data:
-        result.append({
-            "buyer_name": record.buyer_name,
-            "buyer_product": record.buyer_product,
-            "date": record.date,
-        })
-
-     return jsonify(result), 200
-
-
-#TRY TO IMPLEMENT TO ALLOW USER TO RETRIEVE A HISTORY ON A SPECIFIC DATE AND TEST ALL THE ROUTES IN THIS SYSTEM
+          return jsonify(result), 200
