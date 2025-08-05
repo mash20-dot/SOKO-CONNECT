@@ -4,13 +4,13 @@ from flask_jwt_extended  import get_jwt_identity
 from main.models import db, Orders
 from major.decorator import role_required
 
-buyerhistory = Blueprint('buyerhistory', __name__)
+order_pro = Blueprint('order_pro', __name__)
 
 #FOR BUYER TO FILL WHEN CONTACTING OR PURCHASING SOMETHING ON THE PLATFORM
-@buyerhistory.route('/history', methods=['POST'])
+@order_pro.route('/getorder', methods=['POST'])
 @jwt_required()
 @role_required("user") 
-def history():
+def get_order():
           data = request.get_json()
           product = data.get('product')
 

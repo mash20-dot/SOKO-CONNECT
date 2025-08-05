@@ -13,7 +13,7 @@ import pymysql
 #Importing blueprints
 from major.route import major
 from logout.log import logout as logout_blueprint
-from buyerhistory.history import buyerhistory
+from order_pro.order_item import order_pro
 from item.items import item
 from add.min import add
 from money.job import money
@@ -40,7 +40,7 @@ jwt = JWTManager(app)
 # Register Blueprints
 app.register_blueprint(major, url_prefix='/major')
 app.register_blueprint(logout_blueprint, url_prefix='/logout')
-app.register_blueprint(buyerhistory, url_prefix='/buyerhistory')
+app.register_blueprint(order_pro, url_prefix='/order_pro')
 app.register_blueprint(item, url_prefix='/item')
 app.register_blueprint(add, url_prefix='/add')
 app.register_blueprint(money, url_prefix='/money')
