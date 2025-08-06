@@ -18,7 +18,7 @@ class Buyer_user(db.Model):
 class Orders(db.Model): 
     id = db.Column(db.Integer, primary_key=True)
     product = db.Column(db.String(150), nullable=False)
-    order_status = db.Column(db.String(150), nullable=False)
+    order_status = db.Column(db.String(150), nullable=False) #CHECK INSOMNIA FOR THE ERROR AND DROP THIS COLUMN
     payment = db.Column(db.String(150), nullable=False)
     ordered_at = db.Column(db.DateTime, default=datetime.utcnow)
     buyer_user_id = db.Column(db.Integer, db.ForeignKey('buyer_user.id'), nullable=False)

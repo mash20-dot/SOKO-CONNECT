@@ -15,14 +15,11 @@ def order():
      
      data = request.get_json() 
      product = data.get("product")
-     order_status = data.get("order_status")
      payment = data.get("payment")
 
      Missing_fields = []
      if not product:
           Missing_fields.append("product")
-     if not order_status:
-          Missing_fields.append("order_status")
      if not payment:
           Missing_fields.append("payment")
 
@@ -36,8 +33,9 @@ def order():
           return jsonify({"message": "user not found"}), 400
      
      new_order = Orders(
-          product=product, order_status=order_status, payment=payment, business_id_user=Order_id.id)
-     db.session.commit(new_order)
+          product=product, payment=payment, buyer_user_id=Order_id.id)
+     db.session.add(new_order)
+     db.session.commit()
      return jsonify({"message": "order made successfully"}), 201
 
 
