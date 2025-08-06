@@ -21,7 +21,8 @@ class Orders(db.Model):
     order_status = db.Column(db.String(150), nullable=False)
     payment = db.Column(db.String(150), nullable=False)
     ordered_at = db.Column(db.DateTime, default=datetime.utcnow)
-    buyer_user_id = db.Column(db.Integer, db.ForeignKey('buyer_user_id.buyer_user'), nullable=False)
+    buyer_user_id = db.Column(db.Integer, db.ForeignKey('buyer_user.id'), nullable=False)
+
 
 #db model for business authentication
 class Business_user(db.Model):

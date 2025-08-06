@@ -10,9 +10,6 @@ from main.models import db
 from flask_sqlalchemy import SQLAlchemy
 import pymysql
 
-#THIS IN THE MAIN APP
-from add.seed_admin import create_default_admin
-
    
 
 #Importing blueprints
@@ -53,7 +50,6 @@ app.register_blueprint(money, url_prefix='/money')
 # Create all tables
 with app.app_context():
     db.create_all()
-    create_default_admin()
 
 
 
