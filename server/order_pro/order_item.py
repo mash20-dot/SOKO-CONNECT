@@ -65,7 +65,7 @@ def get_order():
           else:
                return jsonify({"messagge": "user not found"}), 400
           
-          buyer = Orders.query.filter_by(product=product).first()
+          buyer = Orders.query.filter_by(product=product).all()
 
           if not buyer:
                return jsonify({"message": "no order found"}), 400
@@ -74,8 +74,8 @@ def get_order():
           result = []
           for record in buyer:
                result.append({
-            "product": record.buyer_name,
-            "status": record.date,
+            "product": record.buyer_user_id,
+            "status": record.ordered_at,
             "payment": record.payment
           })
 
