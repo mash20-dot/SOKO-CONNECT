@@ -20,6 +20,7 @@ class Orders(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     product = db.Column(db.String(150), nullable=False)
     payment = db.Column(db.String(150), nullable=False)
+    tracking_number = db.Column(db.String(50), unique=True, nullable=False)
     ordered_at = db.Column(db.DateTime, default=datetime.utcnow)
     buyer_user_id = db.Column(db.Integer, db.ForeignKey('buyer_user.id'), nullable=False)
      
