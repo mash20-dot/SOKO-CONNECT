@@ -75,8 +75,8 @@ def get_order():
           for record in buyer:
                result.append({
             "product": record.buyer_name,
-            "order_status": record.buyer_product,
             "status": record.date,
+            "payment": record.payment
           })
 
           return jsonify(result), 200
