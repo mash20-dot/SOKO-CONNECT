@@ -26,13 +26,10 @@ def order():
      
      data = request.get_json() 
      product = data.get("product")
-     payment = data.get("payment")
 
      Missing_fields = []
      if not product:
           Missing_fields.append("product")
-     if not payment:
-          Missing_fields.append("payment")
 
      if Missing_fields:
           return jsonify({"message": f"missing_fields, {Missing_fields}"})
@@ -44,7 +41,7 @@ def order():
           return jsonify({"message": "user not found"}), 400
      
      new_order = Orders(
-          product=product, payment=payment, buyer_user_id=Order_id.id)
+          product=product,buyer_user_id=Order_id.id)
      db.session.add(new_order)
      db.session.commit()
      return jsonify({"message": "order made successfully"}), 201
@@ -98,3 +95,6 @@ def get_order():
 @order_pro.route('/orders/stream')
 def stream_orders():
     return Response(stream_order_updates(), mimetype='text/event-stream')
+
+
+#TEST THIS REAL TIME FEATURE
