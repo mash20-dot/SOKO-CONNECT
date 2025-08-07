@@ -1,10 +1,21 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, Response
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended  import get_jwt_identity
 from main.models import db, Orders, Buyer_user
 from major.decorator import role_required
+import time
 
 order_pro = Blueprint('order_pro', __name__)
+
+
+def stream_order_updates():
+    """Yields real-time updates about orders when called."""
+    while True:
+        latest_order = Orders.query.order_by(Orders.created_at.desc()).first()
+        data = f"New order from user: {latest_order.buyer_user_id} at {latest_order.created_at}"
+        yield f"data: {data}\n\n"
+        time.sleep(5) 
+
 
 
 @order_pro.route('/order', methods=['POST'])
@@ -82,4 +93,8 @@ def get_order():
           })
 
           return jsonify(result), 200
-#TEST FOR SOME ERRORS
+
+#returns a real time update on a customer order
+@order_pro.route('/orders/stream')
+def stream_orders():
+    return Response(stream_order_updates(), mimetype='text/event-stream')
