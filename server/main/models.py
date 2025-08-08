@@ -24,7 +24,8 @@ class Orders(db.Model):
     shipping_date = db.Column(db.DateTime)
     delivery_date = db.Column(db.DateTime)
     buyer_user_id = db.Column(db.Integer, db.ForeignKey('buyer_user.id'), nullable=False)
-     
+
+
 
 #db model for business authentication
 class Business_user(db.Model):

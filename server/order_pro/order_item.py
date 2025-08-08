@@ -4,6 +4,8 @@ from flask_jwt_extended  import get_jwt_identity
 from main.models import db, Orders, Buyer_user
 from major.decorator import role_required
 import time
+import random
+import string
 
 order_pro = Blueprint('order_pro', __name__)
 
@@ -39,9 +41,19 @@ def order():
 
      if not Order_id:
           return jsonify({"message": "user not found"}), 400
+
+
+     def generate_tracking_number():
+        while True:
+               random_part = int(''.join(random.choices(string.digits, k=6)))
+               tracking_number = f"{random_part}"
+            # Ensure it's unique
+               existing_user = Orders.query.filter_by(tracking_number=tracking_number).first()
+               if not existing_user:
+                return tracking_number
      
      new_order = Orders(
-          product=product,buyer_user_id=Order_id.id)
+          product=product,buyer_user_id=Order_id.id, tracking_number=generate_tracking_number())
      db.session.add(new_order)
      db.session.commit()
      return jsonify({"message": "order made successfully"}), 201
@@ -82,7 +94,7 @@ def get_order():
           result = []
           for record in buyer:
                result.append({
-            "product": record.buyer_user_id,
+            "product": record.product,
             "ordered_at": record.ordered_at,
             "tracking_number": record.tracking_number,
             "shipping_date": record.shipping_date,
@@ -97,4 +109,4 @@ def stream_orders():
     return Response(stream_order_updates(), mimetype='text/event-stream')
 
 
-#TEST THIS REAL TIME FEATURE
+#HANDLE WHERE A USER CAN RETRIEVE ONLY WHAT HE BOUGHT NOT WHAT OTHERS BOUGHT AS WELL
