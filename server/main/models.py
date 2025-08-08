@@ -19,7 +19,7 @@ class Buyer_user(db.Model):
 class Orders(db.Model): 
     id = db.Column(db.Integer, primary_key=True)
     product = db.Column(db.String(150), nullable=False)
-    tracking_number = db.Column(db.String(50), unique=True, nullable=False)
+    tracking_code = db.Column(db.String(50), unique=True, nullable=False)
     ordered_at = db.Column(db.DateTime, default=datetime.utcnow)
     shipping_date = db.Column(db.DateTime)
     delivery_date = db.Column(db.DateTime)

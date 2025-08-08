@@ -42,21 +42,20 @@ def order():
      if not Order_id:
           return jsonify({"message": "user not found"}), 400
 
-
-     def generate_tracking_number():
+     #generates a unique code for buyers to retrieve order information
+     def generate_tracking_code():
         while True:
-               random_part = int(''.join(random.choices(string.digits, k=6)))
-               tracking_number = f"{random_part}"
-            # Ensure it's unique
-               existing_user = Orders.query.filter_by(tracking_number=tracking_number).first()
+               random_part = (''.join(random.choices(string.ascii_uppercase + string.digits, k=10)))
+               tracking_code = f"{random_part}"
+               existing_user = Orders.query.filter_by(tracking_code=tracking_code).first()
                if not existing_user:
-                return tracking_number
+                return tracking_code
      
      new_order = Orders(
-          product=product,buyer_user_id=Order_id.id, tracking_number=generate_tracking_number())
+          product=product,buyer_user_id=Order_id.id, tracking_code=generate_tracking_code())
      db.session.add(new_order)
      db.session.commit()
-     return jsonify({"message": "order made successfully"}), 201
+     return jsonify({"message": f"order made successfully, tracking code is {generate_tracking_code()}"}), 201
 
 
 
@@ -67,12 +66,12 @@ def order():
 @role_required("user") 
 def get_order():
           data = request.get_json()
-          product = data.get('product')
+          tracking_code = data.get('tracking_code')
 
         #stores a blank field and if not field throws an error
           Missing_fields = []
-          if not product:
-             Missing_fields.append('my_orders')
+          if not tracking_code:
+             Missing_fields.append('tracking_code')
 
           if Missing_fields:
             return jsonify({"Error": f"missing_fields: {Missing_fields}"}), 400
@@ -85,10 +84,14 @@ def get_order():
           else:
                return jsonify({"messagge": "user not found"}), 400
           
-          buyer = Orders.query.filter_by(product=product).all()
+          buyer = Orders.query.filter_by(tracking_code=tracking_code).all()
 
           if not buyer:
                return jsonify({"message": "no order found"}), 400
+          
+          #purchase = Orders.query.filter_by(current_email=buyer_user_id).all()
+          #if not purchase:
+               #return jsonify({"message": "You did not make any purchase"})
 
            # Convert data to JSON-serializable format
           result = []
@@ -96,7 +99,7 @@ def get_order():
                result.append({
             "product": record.product,
             "ordered_at": record.ordered_at,
-            "tracking_number": record.tracking_number,
+            "tracking_code": record.tracking_code,
             "shipping_date": record.shipping_date,
             "delivery_date": record.delivery_date
           })
