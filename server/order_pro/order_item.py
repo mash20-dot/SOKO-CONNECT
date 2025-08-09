@@ -130,13 +130,13 @@ def update_order():
      #if not new_product or not your_tracking_code:
           #return jsonify({"message": "old_tracking and product required"}), 401
      
-     yes_product = request.form.get("yes_product")
-     up_pro = Orders.query.filter_by(product=yes_product).first()
+     yes_product = data.get("yes_product")
+     up_pro = Orders.query.filter_by(product=yes_product, tracking_code=your_tracking_code).first()
      
-     if not (up_pro.tracking_code, your_tracking_code):
+     if up_pro.tracking_code != your_tracking_code:
           return jsonify({"message": "tracking code is invalid"}), 400
      
-     change_order.product = new_product
+     up_pro.product = new_product                                    #AI APROACH FAILED ASK IT WHY IT SHOULD WORK
      db.session.commit()
      return jsonify({"message": "update made successfully"}), 201
 
