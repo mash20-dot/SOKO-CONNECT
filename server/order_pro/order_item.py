@@ -118,24 +118,27 @@ def stream_orders():
 def update_order():
 
      current_email = get_jwt_identity()
-     change_order = Orders.query.filter_by(tracking_code=tracking_code).first()
+     change_order = Buyer_user.query.filter_by(email=current_email).first()
 
-     if not current_email:
+     if not change_order:
           return jsonify({"message": "user not found"}), 400
      
      data = request.get_json()
      new_product = data.get("product")
-     tracking_code = data.get("old_tracking")
+     your_tracking_code = data.get("old_tracking")
      
-     if not new_product or not tracking_code:
-          return jsonify({"message": "old_tracking and product required"}), 401
+     #if not new_product or not your_tracking_code:
+          #return jsonify({"message": "old_tracking and product required"}), 401
      
-     if not (change_order.tracking_code,  tracking_code):
+     yes_product = request.form.get("yes_product")
+     up_pro = Orders.query.filter_by(product=yes_product).first()
+     
+     if not (up_pro.tracking_code, your_tracking_code):
           return jsonify({"message": "tracking code is invalid"}), 400
      
      change_order.product = new_product
      db.session.commit()
-     return jsonify({"message": "update made successfullt"}), 201
+     return jsonify({"message": "update made successfully"}), 201
 
 @order_pro.route('/delete_order', methods=['DELETE'])
 @jwt_required()
