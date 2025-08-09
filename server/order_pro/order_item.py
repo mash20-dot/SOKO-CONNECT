@@ -136,8 +136,6 @@ def update_order():
      change_order.product = new_product
      db.session.commit()
      return jsonify({"message": "update made successfullt"}), 201
-     
-     #TEST THIS ROUTE AND ADD A ROUTE TO DELETE AN ORDER
 
 @order_pro.route('/delete_order', methods=['DELETE'])
 @jwt_required()
@@ -159,14 +157,18 @@ def delete_order():
 
      if not your_tracking_code or not del_pro:
           return jsonify({"message": "del_pro and tracking code required"}), 401
-     
+     #tracking_code = None
      track = Orders.query.filter_by(tracking_code=your_tracking_code).first()
 
+     #MAKE THIS WORK AND MAKE THE UPDATE ROUTE WORK TOO
      if not (track.tracking_code, your_tracking_code):
           return jsonify({"message": "Invalid tracking code"}), 400
 
-     
+      
      track.product = del_pro
      db.session.delete(track)
      db.session.commit()
      return jsonify({"message": f"Order {track} deleted successfully"}), 201
+
+
+#AND A CONNECTION BETWEEN PRODUCTS AND ORDER TABLE
