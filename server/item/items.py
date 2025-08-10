@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from main.models import db, products, Business_user
+from main.models import db, Product_s, Business_user
 from major.decorate import role_required
 
 item = Blueprint('item', __name__)
@@ -32,7 +32,7 @@ def product():
 
       
        #saves products/items into the database
-        new_product = products(
+        new_product = Product_s(
             product_name=product_name, product_price=product_price, product_uses=product_uses,
               business_user_id=business.id)
         db.session.add(new_product)
@@ -64,7 +64,7 @@ def getproduct():
      #Access the identity of the logged in useer with get_jwt_identity
     current_email = get_jwt_identity()
 
-    product_get = products.query.filter_by(product_name=product_name).all()
+    product_get = Product_s.query.filter_by(product_name=product_name).all()
 
     if not product_get:
           return jsonify({"message": "Product could not be found"}), 403                 

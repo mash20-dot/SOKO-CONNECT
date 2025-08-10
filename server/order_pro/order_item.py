@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, Response
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended  import get_jwt_identity
-from main.models import db, Orders, Buyer_user
+from main.models import db, Orders, Buyer_user, Product_s
 from major.decorator import role_required
 import time
 import random
@@ -27,11 +27,11 @@ def order():
 
      
      data = request.get_json() 
-     product = data.get("product")
+     buy_product = data.get("buy_product")
 
      Missing_fields = []
-     if not product:
-          Missing_fields.append("product")
+     if not buy_product:
+          Missing_fields.append("buy_product")
 
      if Missing_fields:
           return jsonify({"message": f"missing_fields, {Missing_fields}"})
@@ -41,6 +41,12 @@ def order():
 
      if not Order_id:
           return jsonify({"message": "user not found"}), 400
+     
+     
+     order_in_pro = Product_s.query.filter_by(product_name=buy_product).first()
+     if not order_in_pro:
+          return jsonify({"message": f"{buy_product} is not available"}), 400
+
 
      #generates a unique code for buyers to retrieve order information
      def generate_tracking_code():
@@ -52,7 +58,8 @@ def order():
                 return tracking_code
      
      new_order = Orders(
-          product=product,buyer_user_id=Order_id.id, tracking_code=generate_tracking_code())
+          product=buy_product,buyer_user_id=Order_id.id, product_s_id=order_in_pro.id,
+          tracking_code=generate_tracking_code())
      db.session.add(new_order)
      db.session.commit()
      return jsonify({"message": f"order made successfully, tracking code is {generate_tracking_code()}"}), 201

@@ -24,7 +24,7 @@ class Orders(db.Model):
     shipping_date = db.Column(db.DateTime)
     delivery_date = db.Column(db.DateTime)
     buyer_user_id = db.Column(db.Integer, db.ForeignKey('buyer_user.id'), nullable=False)
-    products_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
+    product_s_id = db.Column(db.Integer, db.ForeignKey("product_s.id"), nullable=False)
 
 
 
@@ -37,10 +37,10 @@ class Business_user(db.Model):
     password = db.Column(db.String(300), nullable=False)
     role = db.Column(db.String(20), default="business_owner", nullable=False)
     create_at = db.Column(db.DateTime, default=datetime.utcnow)
-    products = db.relationship('products', backref='owner', lazy=True)
+    Product_s = db.relationship('Product_s', backref='owner', lazy=True)
 
 
-class products(db.Model):
+class Product_s(db.Model):
         id = db.Column(db.Integer, primary_key=True)    
         product_name = db.Column(db.String(50))
         product_price = db.Column(db.String(50))
