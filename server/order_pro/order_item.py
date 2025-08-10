@@ -166,7 +166,6 @@ def delete_order():
      #tracking_code = None
      track = Orders.query.filter_by(product=del_pro, tracking_code=your_tracking_code).first()
 
-     #MAKE THIS WORK AND MAKE THE UPDATE ROUTE WORK TOO
      if not track:
           return jsonify({"Error": "Tracking code or product is invalid"}), 400
 
