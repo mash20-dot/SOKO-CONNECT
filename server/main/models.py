@@ -24,6 +24,7 @@ class Orders(db.Model):
     shipping_date = db.Column(db.DateTime)
     delivery_date = db.Column(db.DateTime)
     buyer_user_id = db.Column(db.Integer, db.ForeignKey('buyer_user.id'), nullable=False)
+    products_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
 
 
 
@@ -46,16 +47,5 @@ class products(db.Model):
         product_uses = db.Column(db.String(1000))
         create_at = db.Column(db.DateTime, default=datetime.utcnow)
         business_user_id = db.Column(db.Integer, db.ForeignKey('business_user.id'), nullable=False)
+        Orders = db.relationship("Orders", backref="order", lazy=True)
 
-
-
-
-
-
-
-class Message(db.Model):
-        id = db.Column(db.Integer, primary_key=True)    
-        text = db.Column(db.String(1000))
-
-
-#DEVELOP AN ORDER TABLE
