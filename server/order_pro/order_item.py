@@ -124,21 +124,23 @@ def update_order():
           return jsonify({"message": "user not found"}), 400
      
      data = request.get_json()
-     new_product = data.get("product")
-     your_tracking_code = data.get("old_tracking")
+     new_product = data.get("new_product")
+     your_tracking_code = data.get("your_tracking_code")
      
-     #if not new_product or not your_tracking_code:
-          #return jsonify({"message": "old_tracking and product required"}), 401
+     if not new_product or not your_tracking_code:
+          return jsonify({"message": "old_tracking and product required"}), 401
      
-     yes_product = data.get("yes_product")
-     up_pro = Orders.query.filter_by(product=yes_product, tracking_code=your_tracking_code).first()
+
+     up_pro = Orders.query.filter_by(tracking_code=your_tracking_code).first()
      
-     if up_pro.tracking_code != your_tracking_code:
+     if not up_pro:
           return jsonify({"message": "tracking code is invalid"}), 400
      
-     up_pro.product = new_product                                    #AI APROACH FAILED ASK IT WHY IT SHOULD WORK
+     up_pro.product = new_product                                    
      db.session.commit()
      return jsonify({"message": "update made successfully"}), 201
+
+
 
 @order_pro.route('/delete_order', methods=['DELETE'])
 @jwt_required()
@@ -160,12 +162,13 @@ def delete_order():
 
      if not your_tracking_code or not del_pro:
           return jsonify({"message": "del_pro and tracking code required"}), 401
+     
      #tracking_code = None
-     track = Orders.query.filter_by(tracking_code=your_tracking_code).first()
+     track = Orders.query.filter_by(product=del_pro, tracking_code=your_tracking_code).first()
 
      #MAKE THIS WORK AND MAKE THE UPDATE ROUTE WORK TOO
-     if not (track.tracking_code, your_tracking_code):
-          return jsonify({"message": "Invalid tracking code"}), 400
+     if not track:
+          return jsonify({"Error": "Tracking code or product is invalid"}), 400
 
       
      track.product = del_pro
