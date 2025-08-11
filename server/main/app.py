@@ -19,6 +19,7 @@ from order_pro.order_item import order_pro
 from item.items import item
 from add.min import add
 from money.job import money
+from paystack.pay import paystack
 
 #Telling python to use pymysql as a replacement for MySQLdb
 pymysql.install_as_MySQLdb()
@@ -26,7 +27,8 @@ pymysql.install_as_MySQLdb()
 app = Flask(__name__)
 
 # JWT Secret Key
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-default-secret')
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+app.config['PAYSTACK_SECRET_KEY'] = os.getenv('PAYSTACK_SECRET_KEY')
 
 #setting up MySQL connection
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
@@ -46,6 +48,7 @@ app.register_blueprint(order_pro, url_prefix='/order_pro')
 app.register_blueprint(item, url_prefix='/item')
 app.register_blueprint(add, url_prefix='/add')
 app.register_blueprint(money, url_prefix='/money')
+app.register_blueprint(paystack, url_prefix='/paystack')
 
 # Create all tables
 with app.app_context():
