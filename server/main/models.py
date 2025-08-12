@@ -46,7 +46,7 @@ class Business_user(db.Model):
 class Product_s(db.Model):
         id = db.Column(db.Integer, primary_key=True)    
         product_name = db.Column(db.String(50))
-        product_price = db.Column(db.String(50))
+        product_price = db.Column(db.String(50)) #MAKE IT AN INTEGER AND DROP IT AND TEST IT AGAIN
         product_uses = db.Column(db.String(1000))
         create_at = db.Column(db.DateTime, default=datetime.utcnow)
         business_user_id = db.Column(db.Integer, db.ForeignKey('business_user.id'), nullable=False)

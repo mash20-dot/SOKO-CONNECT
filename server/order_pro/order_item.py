@@ -28,6 +28,7 @@ def order():
      
      data = request.get_json() 
      buy_product = data.get("buy_product")
+     amount = data.get("amount")
 
      Missing_fields = []
      if not buy_product:
@@ -47,6 +48,12 @@ def order():
      if not order_in_pro:
           return jsonify({"message": f"{buy_product} is not available"}), 400
 
+     #if not (order_in_pro.product_price, amount):
+          #return jsonify({"message": "Enter a valid amount"})
+    
+     price = Product_s.query.filter_by(product_price=amount).first()
+     if not price:  
+          return jsonify({"message": "Enter a valid amount"}), 400
 
      #generates a unique code for buyers to retrieve order information
      def generate_tracking_code():
@@ -59,7 +66,7 @@ def order():
      
      new_order = Orders(
           product=buy_product,buyer_user_id=Order_id.id, product_s_id=order_in_pro.id,
-          tracking_code=generate_tracking_code())
+          tracking_code=generate_tracking_code(), amount=price)
      db.session.add(new_order)
      db.session.commit()
      return jsonify({"message": f"order made successfully, tracking code is {generate_tracking_code()}"}), 201

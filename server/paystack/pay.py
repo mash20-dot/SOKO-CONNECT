@@ -1,14 +1,14 @@
-from flask import Flask, Blueprint, redirect
+from flask import Flask, Blueprint, redirect, jsonify
 import requests
 import os
 from flask_jwt_extended import jwt_required
 from major.decorator import role_required
 from dotenv import load_dotenv
-load_dotenv()
-import PAYSTACK_SECRET_KEY
 from main.models import db, Orders, Payment
 from datetime import datetime
 
+
+load_dotenv()
 
 paystack = Blueprint('paystack', __name__)
 
@@ -40,18 +40,25 @@ def initialize_paystack_transaction(tracking_code):
         "amount": order.amount * 100,
         "reference": payment.reference
     }
-
-    #making the API request with the ini url header and sending the payload in a json format
-    response = requests.post(url, headers=headers, json=payload)
+    try:
+        #making the API request with the ini url header and sending the payload in a json format
+        response = requests.post(url, headers=headers, json=payload)
+    except requests.exceptions.RequestException:
+            return jsonify({"Error": "error initializing transaction"}), 500
     
-    #converts paystack json response into python script
-    paystack_response = response.json()
+    try:   
+        #converts paystack json response into python script
+        paystack_response = response.json()
+    except ValueError:
+        return jsonify({"Error": "Invalid json response from paystack"})
 
-      # Save Paystack gateway response
+    # Save Paystack gateway response
     payment.gateway_response = paystack_response.get("message", "")
     db.session.commit()
 
     return paystack_response
+    
 
+#VERIFY THE BUYERS PAYMENT AND SET UP WEBHOOKS
 
 
