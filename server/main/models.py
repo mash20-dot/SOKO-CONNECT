@@ -21,10 +21,13 @@ class Orders(db.Model):
     product = db.Column(db.String(150), nullable=False)
     tracking_code = db.Column(db.String(50), unique=True, nullable=False)
     ordered_at = db.Column(db.DateTime, default=datetime.utcnow)
+    amount = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(100), default="pending", nullable=False)
     shipping_date = db.Column(db.DateTime)
     delivery_date = db.Column(db.DateTime)
     buyer_user_id = db.Column(db.Integer, db.ForeignKey('buyer_user.id'), nullable=False)
     product_s_id = db.Column(db.Integer, db.ForeignKey("product_s.id"), nullable=False)
+    payment_id = db.Column(db.Integer, db.ForeignKey("payment.id"), nullable=False)
 
 
 
@@ -49,3 +52,17 @@ class Product_s(db.Model):
         business_user_id = db.Column(db.Integer, db.ForeignKey('business_user.id'), nullable=False)
         Orders = db.relationship("Orders", backref="order", lazy=True)
 
+class Payment(db.Model):
+     id = db.Column(db.Integer, primary_key=True)
+     reference = db.Column(db.String(100), unique=True, nullable=False)
+     status = db.Column(db.String(100), default="pending")
+     gateway_response = db.Column(db.String(100))
+     paid_at = db.Column(db.DateTime)
+     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+     Orders = db.relationship("Orders", backref="order", lazy=True)
+
+
+
+
+
+#ADD A PAYMENT ROW WITH DEFAULT="Pending" AND AMOUNT COLUMN TO ORDERS TABLE AND A PAYSTACK DB MODEL AND CONNECT BOTH
