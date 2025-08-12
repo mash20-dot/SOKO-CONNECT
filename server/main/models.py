@@ -28,7 +28,7 @@ class Orders(db.Model):
     buyer_user_id = db.Column(db.Integer, db.ForeignKey('buyer_user.id'), nullable=False)
     product_s_id = db.Column(db.Integer, db.ForeignKey("product_s.id"), nullable=False)
     payment_id = db.Column(db.Integer, db.ForeignKey("payment.id"), nullable=False)
-
+    payment = db.relationship("Payment", back_populates="order")
 
 
 #db model for business authentication
@@ -51,6 +51,7 @@ class Product_s(db.Model):
         create_at = db.Column(db.DateTime, default=datetime.utcnow)
         business_user_id = db.Column(db.Integer, db.ForeignKey('business_user.id'), nullable=False)
         Orders = db.relationship("Orders", backref="order", lazy=True)
+       
 
 class Payment(db.Model):
      id = db.Column(db.Integer, primary_key=True)
@@ -59,8 +60,7 @@ class Payment(db.Model):
      gateway_response = db.Column(db.String(100))
      paid_at = db.Column(db.DateTime)
      created_at = db.Column(db.DateTime, default=datetime.utcnow)
-     Orders = db.relationship("Orders", backref="order", lazy=True)
-
+     order = db.relationship("Orders", back_populates="payment", uselist=False)
 
 
 
