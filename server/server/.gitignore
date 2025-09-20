@@ -3,4 +3,5 @@ venv/
 instance/
 venv
 .env
+instance/*.db
 
