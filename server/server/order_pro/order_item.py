@@ -92,7 +92,6 @@ def get_order():
             return jsonify({"Error": f"missing_fields: {Missing_fields}"}), 400
          
          
-         #getting user info for accessing this protected route using get_jwt_identity
           current_email = get_jwt_identity()
           if current_email:
                pass
